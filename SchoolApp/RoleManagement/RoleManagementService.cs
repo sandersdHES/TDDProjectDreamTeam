@@ -7,93 +7,67 @@ public class RoleManagementService : IRoleManagementService
 {
     private readonly List<Role> roles; // List of defined roles
     private readonly List<User> users; // List of users in the system
+    private readonly Action<string> logger;
 
     public RoleManagementService()
     {
         roles = new List<Role>();
         users = new List<User>();
+        this.logger = logger ?? Console.WriteLine;
     }
 
     public bool CreateRole(string roleName)
     {
-        if (string.IsNullOrWhiteSpace(roleName))
-        {
-            throw new ArgumentException("Role name cannot be empty.");
-        }
+        ValidateInput(roleName, "Role name cannot be empty.");
 
         if (roles.Any(role => role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase)))
-        {
             return false; // Role already exists
-        }
 
         roles.Add(new Role(roleName, new List<string>())); // Create a new role with no initial permissions
+        logger?.Invoke($"Role '{roleName}' created.");
         return true;
     }
 
     public bool AssignRole(string userId, string roleName)
     {
-        if (string.IsNullOrWhiteSpace(userId))
-        {
-            throw new ArgumentException("Role name cannot be empty.");
-        }
+         ValidateInput(userId, "User ID cannot be empty.");
 
         // Check if the role exists
         if (!IsRoleValid(roleName))
-        {
             return false; // Cannot assign a non-existent role
-        }
 
         // Find the user
-        var user = users.FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException("User not found.");
-        }
+        var user = GetUser(userId);
 
         // Assign the role to the user
+        string oldRole = user.Role;
         user.Role = roleName;
-        LogRoleChange(userId, user.Role, roleName); // Log the role change
+        LogRoleChange(userId, oldRole, roleName); // Log the role change
         return true;
     }
 
     public bool HasAccess(string userId, string feature)
     {
-        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(feature))
-        {
-            throw new ArgumentException("User ID and feature cannot be null or empty.");
-        }
+        ValidateInput(userId, "User ID cannot be empty.");
+        ValidateInput(feature, "Feature cannot be empty.");
 
         // Find the user
-        var user = users.FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException("User not found.");
-        }
+        var user = GetUser(userId);
 
         // Find the user's role
-        var role = roles.FirstOrDefault(r => r.Name.Equals(user.Role, StringComparison.OrdinalIgnoreCase));
-        if (role == null)
-        {
-            return false; // No role assigned or role not found
-        }
+        var role = GetRole(user.Role);
 
         // Check if the role has access to the specified feature
-        return role.Permissions.Contains(feature, StringComparer.OrdinalIgnoreCase);
+        return role.HasPermission(feature);
     }
 
     public bool UpdateUserRole(string adminId, string userId, string newRole)
     {
-        var admin = users.FirstOrDefault(u => u.Id == adminId);
-        if (admin == null || !admin.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new UnauthorizedAccessException("Only admins can update user roles.");
-        }
+        var admin = GetUser(adminId);
+        if (!admin.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Only admins can update roles.");
 
-        var user = users.FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-        {
-            throw new KeyNotFoundException("User not found.");
-        }
+            var user = GetUser(userId);
 
         if (!IsRoleValid(newRole))
         {
@@ -113,8 +87,21 @@ public class RoleManagementService : IRoleManagementService
 
     public void LogRoleChange(string userId, string oldRole, string newRole)
     {
-        // Here we simply log the role change to the console for demonstration purposes.
-        Console.WriteLine($"User '{userId}' role changed from '{oldRole}' to '{newRole}'.");
+        logger?.Invoke($"User '{userId}' role changed from '{oldRole}' to '{newRole}'.");
+    }
+
+     private Role GetRole(string roleName) =>
+            roles.FirstOrDefault(r => r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Role '{roleName}' not found.");
+
+    private User GetUser(string userId) =>
+        users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase))
+        ?? throw new KeyNotFoundException($"User '{userId}' not found.");
+
+    private void ValidateInput(string input, string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            throw new ArgumentException(errorMessage);
     }
 }
 

@@ -17,4 +17,14 @@ public class Role
     {
         return Permissions.Contains(feature, StringComparer.OrdinalIgnoreCase);
     }
+
+    public void AddPermission(string feature)
+        {
+            Permissions.Add(feature);
+        }
+
+    public void RemovePermission(string feature)
+    {
+        Permissions.Remove(feature);
+    }
 }
