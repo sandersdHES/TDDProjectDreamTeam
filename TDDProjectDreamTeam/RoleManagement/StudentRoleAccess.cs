@@ -6,33 +6,45 @@ namespace TDDProjectDreamTeam;
 
 public class StudentRoleAccess
 {
-[Fact]
-public void HasAccess_WithStudentRole_ShouldReturnTrueForStudentFeatures()
-{
-    // Arrange
-    var mockRoleService = new Mock<IRoleManagementService>();
-    mockRoleService.Setup(service => service.HasAccess(It.Is<string>(id => id == "student123"), It.Is<string>(feature => feature == "LibraryAccess")))
-                   .Returns(true);
+private readonly Mock<IRoleManagementService> mockRoleService;
 
-    // Act
-    var result = mockRoleService.Object.HasAccess("student123", "LibraryAccess");
+    public StudentRoleAccess()
+    {
+        // Common setup for all tests
+        mockRoleService = new Mock<IRoleManagementService>();
+    }
 
-    // Assert
-    Assert.True(result, "Students should have access to student-specific features like the library.");
-}
+    [Fact]
+    public void HasAccess_WithStudentRole_ShouldReturnTrueForStudentFeatures()
+    {
+        // Arrange
+        var userId = "student123";
+        var studentFeature = "LibraryAccess";
 
-[Fact]
-public void HasAccess_WithStudentRole_ShouldReturnFalseForStaffFeatures()
-{
-    // Arrange
-    var mockRoleService = new Mock<IRoleManagementService>();
-    mockRoleService.Setup(service => service.HasAccess(It.Is<string>(id => id == "student123"), It.Is<string>(feature => feature == "ParkingAccess")))
-                   .Returns(false);
+        mockRoleService.Setup(service => service.HasAccess(userId, studentFeature))
+                       .Returns(true);
 
-    // Act
-    var result = mockRoleService.Object.HasAccess("student123", "ParkingAccess");
+        // Act
+        var result = mockRoleService.Object.HasAccess(userId, studentFeature);
 
-    // Assert
-    Assert.False(result, "Students should not have access to staff functionalities like parking.");
-}
+        // Assert
+        Assert.True(result, $"Students should have access to the feature '{studentFeature}'.");
+    }
+
+    [Fact]
+    public void HasAccess_WithStudentRole_ShouldReturnFalseForStaffFeatures()
+    {
+        // Arrange
+        var userId = "student123";
+        var staffFeature = "ParkingAccess";
+
+        mockRoleService.Setup(service => service.HasAccess(userId, staffFeature))
+                       .Returns(false);
+
+        // Act
+        var result = mockRoleService.Object.HasAccess(userId, staffFeature);
+
+        // Assert
+        Assert.False(result, $"Students should not have access to the staff feature '{staffFeature}'.");
+    }
 }

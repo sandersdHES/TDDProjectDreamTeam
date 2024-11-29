@@ -12,4 +12,19 @@ public class Role
         Name = name;
         Permissions = permissions ?? new List<string>();
     }
+
+    public bool HasPermission(string feature)
+    {
+        return Permissions.Contains(feature, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public void AddPermission(string feature)
+        {
+            Permissions.Add(feature);
+        }
+
+    public void RemovePermission(string feature)
+    {
+        Permissions.Remove(feature);
+    }
 }

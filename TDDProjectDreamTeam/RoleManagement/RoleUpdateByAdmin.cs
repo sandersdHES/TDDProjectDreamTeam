@@ -6,33 +6,47 @@ namespace TDDProjectDreamTeam;
 
 public class RoleUpdateByAdmin
 {
+    private readonly Mock<IRoleManagementService> mockRoleService;
+
+    public RoleUpdateByAdmin()
+    {
+        // Common setup for all tests
+        mockRoleService = new Mock<IRoleManagementService>();
+    }
     [Fact]
-public void UpdateUserRole_Admin_ShouldUpdateAndReturnTrue()
-{
+    public void UpdateUserRole_Admin_ShouldUpdateAndReturnTrue()
+    {
     // Arrange
-    var mockRoleService = new Mock<IRoleManagementService>();
-    mockRoleService.Setup(service => service.UpdateUserRole("admin123", "user123", "Staff")).Returns(true);
+        var adminId = "admin123";
+        var userId = "user123";
+        var newRole = "Staff";
+
+    mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
+                    .Returns(true);
 
     // Act
-    var result = mockRoleService.Object.UpdateUserRole("admin123", "user123", "Staff");
+    var result = mockRoleService.Object.UpdateUserRole(adminId, userId, newRole);
 
     // Assert
     Assert.True(result, "Role update by an admin should be successful.");
-}
+    }
 
-[Fact]
-public void UpdateUserRole_NonAdmin_ShouldReturnFalse()
-{
+    [Fact]
+    public void UpdateUserRole_NonAdmin_ShouldReturnFalse()
+    {
     // Arrange
-    var mockRoleService = new Mock<IRoleManagementService>();
-    mockRoleService.Setup(service => service.UpdateUserRole(It.Is<string>(id => id != "admin123"), "user123", "Staff"))
-                   .Returns(false);
+    var nonAdminId = "nonAdmin123";
+    var userId = "user123";
+    var newRole = "Staff";
+
+    mockRoleService.Setup(service => service.UpdateUserRole(nonAdminId, userId, newRole))
+                    .Returns(false);
 
     // Act
-    var result = mockRoleService.Object.UpdateUserRole("nonAdmin123", "user123", "Staff");
+    var result = mockRoleService.Object.UpdateUserRole(nonAdminId, userId, newRole);
 
     // Assert
     Assert.False(result, "Non-admin users should not be able to update roles.");
-}
+    }
 
 }
