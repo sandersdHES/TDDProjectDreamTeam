@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SchoolApp.ProfileManagement.Models;
 
 namespace TDDProjectDreamTeam.ProfileManagement
 {

@@ -1,5 +1,6 @@
 ﻿using Moq;
 using SchoolApp.ProfileManagement;
+using SchoolApp.ProfileManagement.Models;
 
 namespace TDDProjectDreamTeam.ProfileManagement
 {
