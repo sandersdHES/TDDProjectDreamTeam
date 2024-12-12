@@ -5,73 +5,96 @@ using System.Text;
 using System.Threading.Tasks;
 using SchoolApp.UserAuthentication;
 using Moq;
+using SchoolApp.UserAuthentication.Models;
 
 namespace TDDProjectDreamTeam.UserAuthentication
 {
-    public class PasswordHashingTests
+    using Xunit;
+
+    public class HashingServiceTests
     {
-        [Fact]
-        public void Password_Should_Be_Hashed_Before_Storage()
+        private readonly HashingService _hashingService;
+
+        public HashingServiceTests()
         {
-            // Arrange
-            var password = "Password123!";
-            var mockHashingService = new Mock<IHashingService>();
-
-            mockHashingService.Setup(service => service.HashPassword(password))
-                .Returns("hashedpassword123");
-
-            var hashingService = mockHashingService.Object;
-
-            // Act
-            var hashedPassword = hashingService.HashPassword(password);
-
-            // Assert
-            Assert.NotEqual(password, hashedPassword);
+            _hashingService = new HashingService();
         }
 
         [Fact]
-        public void Password_Hash_Should_Be_Unique_For_Different_Passwords()
+        public void HashPassword_Should_Return_Hashed_String()
         {
             // Arrange
-            var password1 = "Password123!";
-            var password2 = "AnotherPassword123!";
-            var mockHashingService = new Mock<IHashingService>();
-
-            mockHashingService.Setup(service => service.HashPassword(password1))
-                .Returns("hashedpassword1");
-
-            mockHashingService.Setup(service => service.HashPassword(password2))
-                .Returns("hashedpassword2");
-
-            var hashingService = mockHashingService.Object;
+            var password = "SecurePassword123!";
 
             // Act
-            var hash1 = hashingService.HashPassword(password1);
-            var hash2 = hashingService.HashPassword(password2);
+            var hashedPassword = _hashingService.HashPassword(password);
 
             // Assert
-            Assert.NotEqual(hash1, hash2);
+            Assert.NotNull(hashedPassword);
+            Assert.NotEqual(password, hashedPassword); // Hash should not equal original password
         }
 
         [Fact]
-        public void Password_Should_Be_Verified_Against_Stored_Hash()
+        public void HashPassword_Should_Produce_Different_Hashes_For_Same_Input()
         {
             // Arrange
-            var password = "Password123!";
-            var hash = "hashedpassword123";
-            var mockHashingService = new Mock<IHashingService>();
-
-            mockHashingService.Setup(service => service.VerifyPassword(password, hash))
-                .Returns(true);
-
-            var hashingService = mockHashingService.Object;
+            var password = "SecurePassword123!";
 
             // Act
-            var isVerified = hashingService.VerifyPassword(password, hash);
+            var hash1 = _hashingService.HashPassword(password);
+            var hash2 = _hashingService.HashPassword(password);
 
             // Assert
-            Assert.True(isVerified);
+            Assert.NotEqual(hash1, hash2); // BCrypt adds a unique salt
         }
+
+        [Fact]
+        public void VerifyPassword_Should_Return_True_For_Valid_Password_And_Hash()
+        {
+            // Arrange
+            var password = "SecurePassword123!";
+            var hashedPassword = _hashingService.HashPassword(password);
+
+            // Act
+            var result = _hashingService.VerifyPassword(password, hashedPassword);
+
+            // Assert
+            Assert.True(result); // Should return true for valid password and hash
+        }
+
+        [Fact]
+        public void VerifyPassword_Should_Return_False_For_Invalid_Password_And_Hash()
+        {
+            // Arrange
+            var password = "SecurePassword123!";
+            var wrongPassword = "WrongPassword123!";
+            var hashedPassword = _hashingService.HashPassword(password);
+
+            // Act
+            var result = _hashingService.VerifyPassword(wrongPassword, hashedPassword);
+
+            // Assert
+            Assert.False(result); // Should return false for invalid password
+        }
+
+        [Fact]
+        public void HashPassword_Should_Throw_Exception_For_Null_Input()
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => _hashingService.HashPassword(null!));
+        }
+
+        [Fact]
+        public void VerifyPassword_Should_Throw_Exception_For_Null_Password()
+        {
+            // Arrange
+            var hashedPassword = _hashingService.HashPassword("Password123!");
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => _hashingService.VerifyPassword(null!, hashedPassword));
+        }
+
     }
 
 }
+
