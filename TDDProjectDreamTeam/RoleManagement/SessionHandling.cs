@@ -1,17 +1,20 @@
 using System;
 using Moq;
 using SchoolApp.RoleManagement;
+using SchoolApp.RoleManagement.Models;
 
 namespace TDDProjectDreamTeam;
 
 public class SessionHandling
 {
     private readonly Mock<IRoleManagementService> mockRoleService;
+    private readonly RoleManagementService roleService;
 
     public SessionHandling()
     {
         // Common setup for all tests
         mockRoleService = new Mock<IRoleManagementService>();
+        roleService = new RoleManagementService();
     }
 
     [Fact]
@@ -20,13 +23,19 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var userId = "user123";
-        var newRole = "Staff";
+        var newRole = new Role("Staff", null);
+        var adminRole = new Role("Admin", null);
+
+        roleService.AddRole(adminRole);
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(adminId, "John", adminRole));
+        roleService.AddUser(new User(userId, "Jane", new Role("Student", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
                        .Returns(true);
 
         // Act
-        var result = mockRoleService.Object.UpdateUserRole(adminId, userId, newRole);
+        var result = roleService.UpdateUserRole(adminId, userId, newRole);
 
         // Assert
         Assert.True(result, "After a role change, the session should reflect the new role immediately.");
@@ -38,10 +47,20 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var userId = "user123";
-        var newRole = "Staff";
+        var adminRole = new Role("Admin", null);
+        var staffRole = new Role("Staff", null);
+        var newRole = new Role("Student", null);
 
-        mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
+        mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, staffRole))
                        .Returns(false);
+
+        //create admin and staff role
+        roleService.AddRole(adminRole);
+        roleService.AddRole(staffRole);
+
+        //create admin and random user
+        roleService.AddUser(new User(adminId, "John", adminRole));
+        roleService.AddUser(new User(userId, "Jane", staffRole));
 
         // Act
         var result = mockRoleService.Object.UpdateUserRole(adminId, userId, newRole);
@@ -56,16 +75,20 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var nonExistentUserId = "nonExistentUser";
-        var newRole = "Staff";
+        var newRole = new Role("Staff", null);
+
+        roleService.AddRole(new Role("Admin", null));
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(adminId, "John", new Role("Admin", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(adminId, nonExistentUserId, newRole))
                        .Throws(new KeyNotFoundException("User not found."));
 
         // Act & Assert
         var exception = Assert.Throws<KeyNotFoundException>(() =>
-            mockRoleService.Object.UpdateUserRole(adminId, nonExistentUserId, newRole)
+            roleService.UpdateUserRole(adminId, nonExistentUserId, newRole)
         );
 
-        Assert.Equal("User not found.", exception.Message);
+        Assert.Equal("User 'nonExistentUser' not found.", exception.Message);
     }
 }

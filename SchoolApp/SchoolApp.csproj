@@ -8,7 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UserRegistration/Models/" />
+    <Compile Remove="UserRegistration\Models\**" />
+    <EmbeddedResource Remove="UserRegistration\Models\**" />
+    <None Remove="UserRegistration\Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt" Version="1.0.0" />
+    <PackageReference Include="BCrypt.Net" Version="0.1.0" />
   </ItemGroup>
 
   <ItemGroup>

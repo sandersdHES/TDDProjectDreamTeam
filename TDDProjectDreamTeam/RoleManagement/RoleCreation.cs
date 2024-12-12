@@ -1,30 +1,33 @@
 using Moq;
 using SchoolApp.RoleManagement;
+using SchoolApp.RoleManagement.Models;
 
 namespace TDDProjectDreamTeam
 {
     public class RoleCreation
     {
         private readonly Mock<IRoleManagementService> mockRoleService;
+        private readonly RoleManagementService roleManagementService;
 
         public RoleCreation()
         {
             // Common setup for all tests
             mockRoleService = new Mock<IRoleManagementService>();
+            roleManagementService = new RoleManagementService();
         }
         [Fact]
         public void CreateRole_WithValidName_ShouldReturnTrue()
         {
             // Arrange
-            var roleName = "Tutor";
-            mockRoleService.Setup(service => service.CreateRole(It.Is<string>(name => !string.IsNullOrWhiteSpace(name))))
+            var role = new Role("Tutor", new List<string>());
+            mockRoleService.Setup(service => service.CreateRole(role))
                            .Returns(true);
 
             // Act
-            var result = mockRoleService.Object.CreateRole(roleName);
+            var result = roleManagementService.CreateRole(role);
 
             // Assert
-            Assert.True(result, $"The role creation should return true for a valid role name '{roleName}'.");
+            Assert.True(result, $"The role creation should return true for a valid role '{role.Name}'.");
         }
 
         [Fact]
@@ -32,11 +35,12 @@ namespace TDDProjectDreamTeam
         {
             // Arrange
             var invalidRoleName = string.Empty;
-            mockRoleService.Setup(service => service.CreateRole(invalidRoleName))
+            var invalidRole = new Role(invalidRoleName, new List<string>());
+            mockRoleService.Setup(service => service.CreateRole(invalidRole))
                            .Throws(new ArgumentException("Role name cannot be empty."));
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => mockRoleService.Object.CreateRole(invalidRoleName));
+            var exception = Assert.Throws<ArgumentException>(() => roleManagementService.CreateRole(invalidRole));
             Assert.Equal("Role name cannot be empty.", exception.Message);
         }
 
@@ -44,15 +48,17 @@ namespace TDDProjectDreamTeam
         public void CreateRole_WithDuplicateName_ShouldReturnFalse()
         {
             // Arrange
-            var duplicateRoleName = "Staff";
-            mockRoleService.Setup(service => service.CreateRole(duplicateRoleName))
+            var duplicateRole = new Role("Staff", new List<string>());
+            mockRoleService.Setup(service => service.CreateRole(duplicateRole))
                            .Returns(false); // Simulate that the role already exists
 
+            roleManagementService.CreateRole(duplicateRole);
+
             // Act
-            var result = mockRoleService.Object.CreateRole(duplicateRoleName);
+            var result = roleManagementService.CreateRole(duplicateRole);
 
             // Assert
-            Assert.False(result, $"The role creation should return false if the role name '{duplicateRoleName}' already exists.");
+            Assert.False(result, $"The role creation should return false if the role '{duplicateRole.Name}' already exists.");
         }
     }
 }
