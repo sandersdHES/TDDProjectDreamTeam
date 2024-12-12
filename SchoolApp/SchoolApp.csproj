@@ -8,7 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UserRegistration/Models/" />
+    <Compile Remove="UserRegistration\Models\**" />
+    <EmbeddedResource Remove="UserRegistration\Models\**" />
+    <None Remove="UserRegistration\Models\**" />
   </ItemGroup>
 
 </Project>
