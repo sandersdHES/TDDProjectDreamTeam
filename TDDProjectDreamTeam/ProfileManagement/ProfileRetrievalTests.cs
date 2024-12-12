@@ -1,8 +1,8 @@
 ﻿using System;
 using Moq;
 using Xunit;
-using TDDProjectDreamTeam.ProfileManagement;
 using SchoolApp.ProfileManagement;
+using SchoolApp.ProfileManagement.Models;
 
 namespace TDDProjectDreamTeam.ProfileManagement
 {

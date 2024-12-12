@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SchoolApp.ProfileManagement
+namespace SchoolApp.ProfileManagement.Models
 {
     public interface IUserProfileService
     {
@@ -18,11 +18,4 @@ namespace SchoolApp.ProfileManagement
         bool UploadProfilePicture(string userId, byte[] picture);
     }
 
-    public class UserProfile
-    {
-        public string UserId { get; set; }
-        public string Email { get; set; }
-        public string Name { get; set; }
-        // Additional profile fields
-    }
 }
