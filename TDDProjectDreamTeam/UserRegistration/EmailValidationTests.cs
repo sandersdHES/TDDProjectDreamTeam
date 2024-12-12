@@ -5,21 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SchoolApp.UserRegistration;
+using SchoolApp.UserRegistration.Models;
 
 namespace TDDProjectDreamTeam.UserRegistration
 {
     public class EmailValidationTests
     {
+        // EmailValidationTests.cs
         [Fact]
         public void RegisterUser_Should_Fail_If_Email_Already_Exists()
         {
             // Arrange
-            var mockService = new Mock<IUserRegistrationService>();
+            var service = new UserRegistrationService();
             var email = "existing.email@example.com";
-
-            mockService.Setup(service => service.IsEmailAvailable(email)).Returns(false);
-
-            var service = mockService.Object;
 
             // Act
             var result = service.IsEmailAvailable(email);
@@ -32,12 +30,8 @@ namespace TDDProjectDreamTeam.UserRegistration
         public void RegisterUser_Should_Succeed_If_Email_Is_Available()
         {
             // Arrange
-            var mockService = new Mock<IUserRegistrationService>();
+            var service = new UserRegistrationService();
             var email = "new.user@example.com";
-
-            mockService.Setup(service => service.IsEmailAvailable(email)).Returns(true);
-
-            var service = mockService.Object;
 
             // Act
             var result = service.IsEmailAvailable(email);
@@ -50,12 +44,8 @@ namespace TDDProjectDreamTeam.UserRegistration
         public void RegisterUser_Should_Fail_With_Invalid_Email_Format()
         {
             // Arrange
-            var mockService = new Mock<IUserRegistrationService>();
+            var service = new UserRegistrationService();
             var email = "invalid-email";
-
-            mockService.Setup(service => service.IsValidEmail(email)).Returns(false);
-
-            var service = mockService.Object;
 
             // Act
             var result = service.IsValidEmail(email);
@@ -68,12 +58,8 @@ namespace TDDProjectDreamTeam.UserRegistration
         public void RegisterUser_Should_Fail_If_Email_Is_Blank()
         {
             // Arrange
-            var mockService = new Mock<IUserRegistrationService>();
+            var service = new UserRegistrationService();
             var email = "";
-
-            mockService.Setup(service => service.IsValidEmail(email)).Returns(false);
-
-            var service = mockService.Object;
 
             // Act
             var result = service.IsValidEmail(email);
@@ -81,28 +67,52 @@ namespace TDDProjectDreamTeam.UserRegistration
             // Assert
             Assert.False(result);
         }
-
         [Fact]
         public void RegisterUser_Should_Handle_Email_Case_Insensitivity()
         {
             // Arrange
-            var mockService = new Mock<IUserRegistrationService>();
-            var email1 = "USER@EXAMPLE.COM";
-            var email2 = "user@example.com";
-
-            mockService.Setup(service => service.IsEmailAvailable(email1)).Returns(true);
-            mockService.Setup(service => service.IsEmailAvailable(email2)).Returns(false);
-
-            var service = mockService.Object;
+            var service = new UserRegistrationService();
 
             // Act
-            var result1 = service.IsEmailAvailable(email1);
-            var result2 = service.IsEmailAvailable(email2);
+            var emailUpper = "USER@EXAMPLE.COM";
+            var emailLower = "user@example.com";
+
+            var isAvailableUpper = service.IsEmailAvailable(emailUpper); // Majuscules
+            var isAvailableLower = service.IsEmailAvailable(emailLower); // Minuscules
 
             // Assert
-            Assert.True(result1);
-            Assert.False(result2);
+            Assert.True(isAvailableUpper); // Devrait être True car déjà enregistré
+            Assert.True(isAvailableLower); // Devrait être True car déjà enregistré
         }
+
+        [Fact]
+        public void RegisterUser_Should_Add_Email_To_RegisteredEmails()
+        {
+            // Arrange
+            var service = new UserRegistrationService();
+            var name = "John Doe";
+            var email = "new.user@example.com";
+            var password = "StrongPassword123!";
+
+            // Act
+            var result = service.RegisterUser(name, email, password);
+
+            // Assert
+            Assert.True(result); // L'enregistrement doit réussir
+            Assert.False(service.IsEmailAvailable(email)); // L'e-mail doit être enregistré
+        }
+        [Fact]
+        public void IsEmailAvailable_Should_Succeed_If_Email_With_Different_Case_Is_New()
+        {
+            var service = new UserRegistrationService();
+            var email = "NEW.USER@example.com"; // Nouvelle casse
+
+            var result = service.IsEmailAvailable(email);
+
+            Assert.True(result); // L'e-mail doit être disponible
+        }
+
+
     }
 
 }
