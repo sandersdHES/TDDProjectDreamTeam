@@ -10,17 +10,17 @@ namespace SchoolApp.UserRegistration.Models
     public class UserRegistrationService : IUserRegistrationService
     {
         private const int MaxLength = 255;
-        private readonly HashSet<string> _registeredEmails;
+        public readonly HashSet<string> _registeredEmails;
 
         public UserRegistrationService()
         {
-            // Simulate a database with a set of registered emails
             _registeredEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "existing.email@example.com",
-            "test.user@example.com"
-        };
+            {
+                "existing.email@example.com",
+                "test.user@example.com"
+            };
         }
+
 
         public bool RegisterUser(string name, string email, string password)
         {
@@ -80,7 +80,7 @@ namespace SchoolApp.UserRegistration.Models
             {
                 return false;
             }
-
+            email.ToLower();
             var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
             return emailRegex.IsMatch(email);
         }
