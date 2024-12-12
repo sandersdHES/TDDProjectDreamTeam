@@ -1,6 +1,6 @@
 using System;
 
-namespace SchoolApp.RoleManagement.Models;
+namespace SchoolApp.Models;
 
 public class Role
 {
@@ -19,9 +19,9 @@ public class Role
     }
 
     public void AddPermission(string feature)
-        {
-            Permissions.Add(feature);
-        }
+    {
+        Permissions.Add(feature);
+    }
 
     public void RemovePermission(string feature)
     {

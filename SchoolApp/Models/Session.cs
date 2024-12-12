@@ -1,6 +1,6 @@
 using System;
 
-namespace SchoolApp.RoleManagement.Models;
+namespace SchoolApp.Models;
 
 public class Session
 {
