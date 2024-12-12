@@ -2,6 +2,7 @@ using System;
 using Moq;
 using SchoolApp.RoleManagement;
 using SchoolApp.RoleManagement.Models;
+using SchoolApp.RoleManagement.Models; // Assuming Role class is in this namespace
 
 namespace TDDProjectDreamTeam;
 
@@ -19,26 +20,20 @@ public class RoleAssignment
     [Fact]
     public void AssignRole_WithValidUserIdAndRoleName_ShouldReturnTrue()
     {
-        
         // Arrange
         var userId = "12345";
-        var roleName = "Student";
+        var role = new Role("Student", new List<string> { "Read" });
+        mockRoleService.Setup(service => service.AssignRole(userId, role))
+                       .Returns(true);
 
-        //add student role
-        roleService.AddRole(new Role("Student", new List<string> { "Read" }));
-
-        //add user with student role
+        roleService.AddRole(role);
         roleService.AddUser(new User(userId, "Nat", null));
 
-        mockRoleService.Setup(service => service.AssignRole(It.Is<string>(id => !string.IsNullOrWhiteSpace(id)),
-                                                            It.Is<string>(role => !string.IsNullOrWhiteSpace(role))))
-                    .Returns(true);
-
         // Act
-        var result = roleService.AssignRole(userId, "Student");
+        var result = roleService.AssignRole(userId, role);
 
         // Assert
-        Assert.True(result, $"Assigning the role '{roleName}' to user '{userId}' should return true.");
+        Assert.True(result, $"Assigning the role '{role.Name}' to user '{userId}' should return true.");
     }
 
     [Fact]
@@ -46,12 +41,10 @@ public class RoleAssignment
     {
         // Arrange
         var userId = "12345";
-        var nonExistentRole = "NonExistentRole";
-
+        var nonExistentRole = new Role("NonExistentRole", null);
         mockRoleService.Setup(service => service.IsRoleValid(nonExistentRole)).Returns(false);
         mockRoleService.Setup(service => service.AssignRole(userId, nonExistentRole)).Returns(false);
 
-        //add user with student role
         roleService.AddUser(new User(userId, "Nat", null));
 
         // Act
@@ -59,8 +52,8 @@ public class RoleAssignment
         var result = roleService.AssignRole(userId, nonExistentRole);
 
         // Assert
-        Assert.False(isValidRole, $"The role '{nonExistentRole}' should not be valid.");
-        Assert.False(result, $"Assigning the non-existent role '{nonExistentRole}' to user '{userId}' should return false.");
+        Assert.False(isValidRole, $"The role '{nonExistentRole.Name}' should not be valid.");
+        Assert.False(result, $"Assigning the non-existent role '{nonExistentRole.Name}' to user '{userId}' should return false.");
     }
 
 }

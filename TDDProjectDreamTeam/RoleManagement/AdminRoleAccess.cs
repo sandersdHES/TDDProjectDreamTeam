@@ -19,21 +19,15 @@ public class AdminRoleAccess
     public void HasAccess_WithAdminRole_ShouldReturnTrueForAllFeatures()
     {
         // Arrange
-        mockRoleService.Setup(service => service.HasAccess(It.Is<string>(id => id == "admin123"), It.IsAny<string>()))
-                    .Returns(true);
+        var adminRole = new Role("Admin", new List<string> { "ModifyRoles", "ParkingAccess", "ViewReports" });
+        roleService.AddRole(adminRole);
+        roleService.AddUser(new User("admin123", "John", adminRole));
 
-        var features = new List<string>
-        {
-            "ModifyRoles",
-            "ParkingAccess",
-            "ViewReports"
-        };
-
-        roleService.AddRole(new Role("Admin", features));
-        roleService.AddUser(new User("admin123", "John", "Admin"));
+        mockRoleService.Setup(service => service.HasAccess("admin123", It.IsAny<string>()))
+                       .Returns(true);
 
         // Act & Assert
-        foreach (var feature in features)
+        foreach (var feature in adminRole.Permissions)
         {
             var result = roleService.HasAccess("admin123", feature);
             Assert.True(result, $"Admins should have access to {feature}.");
@@ -44,19 +38,22 @@ public class AdminRoleAccess
     public void UpdateUserRole_DeleteLastAdmin_ShouldReturnError()
     {
         // Arrange
-        mockRoleService.Setup(service => service.UpdateUserRole(It.Is<string>(id => id == "admin123"), "lastAdminUser", null))
-                    .Returns(false);
+        var adminRole = new Role("Admin", null);
+        var otherRole = new Role("Staff", null);
+        roleService.AddRole(adminRole);
+        roleService.AddRole(otherRole);
+        roleService.AddUser(new User("admin123", "John", adminRole));
 
-        //add admin role
-        roleService.AddRole(new Role("Admin", new List<string> { "ModifyRoles", "ParkingAccess", "ViewReports" }));
-        roleService.AddUser(new User("lastAdminUser", "John", "Admin"));
-        roleService.AddUser(new User("admin123", "John", "Admin"));
+        mockRoleService.Setup(service => service.UpdateUserRole("admin123", "lastAdminUser", null))
+                       .Returns(false);
 
         // Act
-        var result = roleService.UpdateUserRole("admin123", "lastAdminUser", null);
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            roleService.UpdateUserRole("admin123", "admin123", otherRole)
+        );
 
         // Assert
-        Assert.False(result, "The system should prevent deleting the last admin role.");
+        Assert.Equal("Cannot update the last remaining admin to another role.", exception.Message);
     }
 
 }

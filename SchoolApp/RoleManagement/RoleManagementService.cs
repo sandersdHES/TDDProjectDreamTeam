@@ -16,33 +16,31 @@ public class RoleManagementService : IRoleManagementService
         this.logger = logger ?? Console.WriteLine;
     }
 
-    public bool CreateRole(string roleName)
+    public bool CreateRole(Role role)
     {
-        ValidateInput(roleName, "Role name cannot be empty.");
+        ValidateInput(role?.Name, "Role name cannot be empty.");
 
-        if (roles.Any(role => role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase)))
+        if (roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase)))
             return false; // Role already exists
 
-        roles.Add(new Role(roleName, new List<string>())); // Create a new role with no initial permissions
-        logger?.Invoke($"Role '{roleName}' created.");
+        roles.Add(role);
         return true;
     }
 
-    public bool AssignRole(string userId, string roleName)
+    public bool AssignRole(string userId, Role role)
     {
-         ValidateInput(userId, "User ID cannot be empty.");
+        ValidateInput(userId, "User ID cannot be empty.");
 
         // Check if the role exists
-        if (!IsRoleValid(roleName))
+        if (!IsRoleValid(role))
             return false; // Cannot assign a non-existent role
 
         // Find the user
         var user = GetUser(userId);
 
         // Assign the role to the user
-        string oldRole = user.Role;
-        user.Role = roleName;
-        LogRoleChange(userId, oldRole, roleName); // Log the role change
+        var oldRole = user.Role;
+        user.Role = role;
         return true;
     }
 
@@ -54,45 +52,40 @@ public class RoleManagementService : IRoleManagementService
         // Find the user
         var user = GetUser(userId);
 
-        // Find the user's role
-        var role = GetRole(user.Role);
-
         // Check if the role has access to the specified feature
-        return role.HasPermission(feature);
+        return user.Role.HasPermission(feature);
     }
 
-    public bool UpdateUserRole(string adminId, string userId, string newRole)
+    public bool UpdateUserRole(string adminId, string userId, Role newRole)
     {
         var admin = GetUser(adminId);
-        if (!admin.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        if (!admin.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
                 throw new UnauthorizedAccessException("Only admins can update roles.");
-
-            var user = GetUser(userId);
 
         if (!IsRoleValid(newRole))
         {
             return false; // New role does not exist
         }
 
-        string oldRole = user.Role;
+        var user = GetUser(userId);
+
+        // Check if the user being updated is the only admin
+        if (user.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            var adminCount = users.Count(u => u.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+            if (adminCount <= 1)
+                throw new InvalidOperationException("Cannot update the last remaining admin to another role.");
+        }
+
+        var oldRole = user.Role;
         user.Role = newRole;
-        LogRoleChange(userId, oldRole, newRole); // Update session after role change
         return true;
     }
 
-    public bool IsRoleValid(string roleName)
+    public bool IsRoleValid(Role role)
     {
-        return roles.Any(role => role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+        return roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
     }
-
-    public void LogRoleChange(string userId, string oldRole, string newRole)
-    {
-        logger?.Invoke($"User '{userId}' role changed from '{oldRole}' to '{newRole}'.");
-    }
-
-     private Role GetRole(string roleName) =>
-            roles.FirstOrDefault(r => r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
-            ?? throw new KeyNotFoundException($"Role '{roleName}' not found.");
 
     private User GetUser(string userId) =>
         users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase))

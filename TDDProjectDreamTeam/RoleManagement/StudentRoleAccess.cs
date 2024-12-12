@@ -23,16 +23,13 @@ private readonly RoleManagementService roleService;
         // Arrange
         var userId = "student123";
         var studentFeature = "LibraryAccess";
-        var permissions = new List<String>
-        {
-            studentFeature
-        };
+        var studentRole = new Role("Student", new List<string> { studentFeature });
 
         mockRoleService.Setup(service => service.HasAccess(userId, studentFeature))
                        .Returns(true);
 
-        roleService.AddRole(new Role("Student", permissions));
-        roleService.AddUser(new User("student123", "Jojo", "Student"));
+        roleService.AddRole(studentRole);
+        roleService.AddUser(new User("student123", "Jojo", studentRole));
        
         
         // Act
@@ -48,13 +45,12 @@ private readonly RoleManagementService roleService;
         // Arrange
         var userId = "student123";
         var staffFeature = "ParkingAccess";
-        var permissions = new List<String>
-        {
-            "LibraryAccess"
-        };
+        var staffRole = new Role("Staff", new List<string> { staffFeature });
+        var studentRole = new Role("Student", new List<string>());
 
-        roleService.AddRole(new Role("Student", permissions));
-        roleService.AddUser(new User("student123", "Jojo", "Student"));
+        roleService.AddRole(staffRole);
+        roleService.AddRole(studentRole);
+        roleService.AddUser(new User(userId, "Jojo", studentRole));
 
         mockRoleService.Setup(service => service.HasAccess(userId, staffFeature))
                        .Returns(false);

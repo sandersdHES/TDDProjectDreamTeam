@@ -23,16 +23,13 @@ public class StaffRoleAccess
         // Arrange
         var userId = "staff123";
         var staffFeature = "ParkingAccess";
-        var permissions = new List<String>
-        {
-            staffFeature
-        };
+        var staffRole = new Role("Staff", new List<string> { staffFeature });
 
         mockRoleService.Setup(service => service.HasAccess(userId, staffFeature))
                        .Returns(true);
 
-        roleService.AddRole(new Role("Staff", permissions));
-        roleService.AddUser(new User("staff123", "John", "Staff"));
+        roleService.AddRole(staffRole);
+        roleService.AddUser(new User(userId, "John", staffRole));
 
         // Act
         var result = roleService.HasAccess(userId, staffFeature);
@@ -47,16 +44,13 @@ public class StaffRoleAccess
         // Arrange
         var userId = "staff123";
         var adminFeature = "ModifyRoles";
-        var permissions = new List<String>
-        {
-            "ParkingAccess"
-        };
+        var staffRole = new Role("Staff", new List<string> { "ParkingAccess" });
 
         mockRoleService.Setup(service => service.HasAccess(userId, adminFeature))
                        .Returns(false);
 
-        roleService.AddRole(new Role("Staff", permissions));
-        roleService.AddUser(new User("staff123", "John", "Staff"));
+        roleService.AddRole(staffRole);
+        roleService.AddUser(new User(userId, "John", staffRole));
 
         // Act
         var result = roleService.HasAccess(userId, adminFeature);

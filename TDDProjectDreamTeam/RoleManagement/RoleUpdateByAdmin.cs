@@ -19,28 +19,19 @@ public class RoleUpdateByAdmin
     [Fact]
     public void UpdateUserRole_Admin_ShouldUpdateAndReturnTrue()
     {
-    // Arrange
+        // Arrange
         var adminId = "admin123";
         var userId = "user123";
-        var newRole = "Staff";
+        var newRole = new Role("Staff", new List<string> { "Read", "Update" });
+        var adminRole = new Role("Admin", new List<string> { "Create", "Read", "Update", "Delete" });
 
-        //create admin and staff role
-        roleService.AddRole
-            (
-            new Role("Admin", new List<string> { "Create", "Read", "Update", "Delete" })
-        );
-        roleService.AddRole
-            (
-            new Role("Staff", new List<string> { "Read", "Update" })
-        );
-        //add admin user
-        roleService.AddUser(new User("admin123", "Admin User", "Admin"));
-
-        // add user with student role
-        roleService.AddUser(new User("user123", "User One", "Student"));
+        roleService.AddRole(adminRole);
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(adminId, "Admin User", adminRole));
+        roleService.AddUser(new User(userId, "User One", new Role("Student", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
-                    .Returns(true);
+                       .Returns(true);
 
         // Act
         var result = roleService.UpdateUserRole(adminId, userId, newRole);
@@ -52,36 +43,23 @@ public class RoleUpdateByAdmin
     [Fact]
     public void UpdateUserRole_NonAdmin_ShouldReturnFalse()
     {
-    // Arrange
-    var nonAdminId = "nonAdmin123";
-    var userId = "user123";
-    var newRole = "Staff";
+        // Arrange
+        var nonAdminId = "nonAdmin123";
+        var userId = "user123";
+        var newRole = new Role("Staff", new List<string> { "Read", "Update" });
 
-        //Add admin and staff role
-        roleService.AddRole
-            (
-            new Role("Admin", new List<string> { "Create", "Read", "Update", "Delete" })
-        );
-        roleService.AddRole
-            (
-            new Role("Staff", new List<string> { "Read", "Update" })
-        );
-
-        // Add non-admin user
-        roleService.AddUser(new User("nonAdmin123", "Non-Admin User", "Staff"));
-
-        //add a student user
-        roleService.AddUser(new User("user123", "User One", "Student"));
+        roleService.AddRole(new Role("Admin", new List<string>()));
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(nonAdminId, "Non-Admin User", new Role("Staff", null)));
+        roleService.AddUser(new User(userId, "User One", new Role("Student", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(nonAdminId, userId, newRole))
-                    .Returns(false);
+                       .Returns(false);
 
-        // Act
-        //should throw exception
+        // Act & Assert
         var exception = Assert.Throws<UnauthorizedAccessException>(() =>
             roleService.UpdateUserRole(nonAdminId, userId, newRole)
         );
-        // Assert
         Assert.Equal("Only admins can update roles.", exception.Message);
     }
 

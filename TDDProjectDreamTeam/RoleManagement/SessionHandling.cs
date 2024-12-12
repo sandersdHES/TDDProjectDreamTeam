@@ -23,15 +23,13 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var userId = "user123";
-        var newRole = "Staff";
+        var newRole = new Role("Staff", null);
+        var adminRole = new Role("Admin", null);
 
-        //create admin and staff role
-        roleService.CreateRole("Admin");
-        roleService.CreateRole(newRole);
-
-        //create admin and random user
-        roleService.AddUser(new User(adminId, "John", "Admin"));
-        roleService.AddUser(new User(userId, "Jane", "Student"));
+        roleService.AddRole(adminRole);
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(adminId, "John", adminRole));
+        roleService.AddUser(new User(userId, "Jane", new Role("Student", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
                        .Returns(true);
@@ -49,18 +47,20 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var userId = "user123";
-        var newRole = "Staff";
+        var adminRole = new Role("Admin", null);
+        var staffRole = new Role("Staff", null);
+        var newRole = new Role("Student", null);
 
-        mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, newRole))
+        mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, staffRole))
                        .Returns(false);
 
         //create admin and staff role
-        roleService.CreateRole("Admin");
-        roleService.CreateRole(newRole);
+        roleService.AddRole(adminRole);
+        roleService.AddRole(staffRole);
 
         //create admin and random user
-        roleService.AddUser(new User(adminId, "John", "Admin"));
-        roleService.AddUser(new User(userId, "Jane", newRole));
+        roleService.AddUser(new User(adminId, "John", adminRole));
+        roleService.AddUser(new User(userId, "Jane", staffRole));
 
         // Act
         var result = mockRoleService.Object.UpdateUserRole(adminId, userId, newRole);
@@ -75,14 +75,11 @@ public class SessionHandling
         // Arrange
         var adminId = "admin123";
         var nonExistentUserId = "nonExistentUser";
-        var newRole = "Staff";
+        var newRole = new Role("Staff", null);
 
-        //create admin and staff role
-        roleService.CreateRole("Admin");
-        roleService.CreateRole(newRole);
-
-        //create admin and random user
-        roleService.AddUser(new User(adminId, "John", "Admin"));
+        roleService.AddRole(new Role("Admin", null));
+        roleService.AddRole(newRole);
+        roleService.AddUser(new User(adminId, "John", new Role("Admin", null)));
 
         mockRoleService.Setup(service => service.UpdateUserRole(adminId, nonExistentUserId, newRole))
                        .Throws(new KeyNotFoundException("User not found."));
