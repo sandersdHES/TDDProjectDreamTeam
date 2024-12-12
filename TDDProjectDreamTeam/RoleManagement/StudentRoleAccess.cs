@@ -1,17 +1,20 @@
 using System;
 using Moq;
 using SchoolApp.RoleManagement;
+using SchoolApp.RoleManagement.Models;
 
 namespace TDDProjectDreamTeam;
 
 public class StudentRoleAccess
 {
 private readonly Mock<IRoleManagementService> mockRoleService;
+private readonly RoleManagementService roleService;
 
     public StudentRoleAccess()
     {
         // Common setup for all tests
         mockRoleService = new Mock<IRoleManagementService>();
+        roleService = new RoleManagementService();
     }
 
     [Fact]
@@ -20,12 +23,20 @@ private readonly Mock<IRoleManagementService> mockRoleService;
         // Arrange
         var userId = "student123";
         var studentFeature = "LibraryAccess";
+        var permissions = new List<String>
+        {
+            studentFeature
+        };
 
         mockRoleService.Setup(service => service.HasAccess(userId, studentFeature))
                        .Returns(true);
 
+        roleService.AddRole(new Role("Student", permissions));
+        roleService.AddUser(new User("student123", "Jojo", "Student"));
+       
+        
         // Act
-        var result = mockRoleService.Object.HasAccess(userId, studentFeature);
+        var result = roleService.HasAccess(userId, studentFeature);
 
         // Assert
         Assert.True(result, $"Students should have access to the feature '{studentFeature}'.");
@@ -37,12 +48,19 @@ private readonly Mock<IRoleManagementService> mockRoleService;
         // Arrange
         var userId = "student123";
         var staffFeature = "ParkingAccess";
+        var permissions = new List<String>
+        {
+            "LibraryAccess"
+        };
+
+        roleService.AddRole(new Role("Student", permissions));
+        roleService.AddUser(new User("student123", "Jojo", "Student"));
 
         mockRoleService.Setup(service => service.HasAccess(userId, staffFeature))
                        .Returns(false);
 
         // Act
-        var result = mockRoleService.Object.HasAccess(userId, staffFeature);
+        var result = roleService.HasAccess(userId, staffFeature);
 
         // Assert
         Assert.False(result, $"Students should not have access to the staff feature '{staffFeature}'.");

@@ -6,11 +6,13 @@ namespace TDDProjectDreamTeam
     public class RoleCreation
     {
         private readonly Mock<IRoleManagementService> mockRoleService;
+        private readonly RoleManagementService roleManagementService;
 
         public RoleCreation()
         {
             // Common setup for all tests
             mockRoleService = new Mock<IRoleManagementService>();
+            roleManagementService = new RoleManagementService();
         }
         [Fact]
         public void CreateRole_WithValidName_ShouldReturnTrue()
@@ -21,7 +23,7 @@ namespace TDDProjectDreamTeam
                            .Returns(true);
 
             // Act
-            var result = mockRoleService.Object.CreateRole(roleName);
+            var result = roleManagementService.CreateRole(roleName);
 
             // Assert
             Assert.True(result, $"The role creation should return true for a valid role name '{roleName}'.");
@@ -36,7 +38,7 @@ namespace TDDProjectDreamTeam
                            .Throws(new ArgumentException("Role name cannot be empty."));
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => mockRoleService.Object.CreateRole(invalidRoleName));
+            var exception = Assert.Throws<ArgumentException>(() => roleManagementService.CreateRole(invalidRoleName));
             Assert.Equal("Role name cannot be empty.", exception.Message);
         }
 
@@ -47,9 +49,11 @@ namespace TDDProjectDreamTeam
             var duplicateRoleName = "Staff";
             mockRoleService.Setup(service => service.CreateRole(duplicateRoleName))
                            .Returns(false); // Simulate that the role already exists
+            // Add the duplicate role to the list of roles
+            roleManagementService.CreateRole(duplicateRoleName);
 
             // Act
-            var result = mockRoleService.Object.CreateRole(duplicateRoleName);
+            var result = roleManagementService.CreateRole(duplicateRoleName);
 
             // Assert
             Assert.False(result, $"The role creation should return false if the role name '{duplicateRoleName}' already exists.");

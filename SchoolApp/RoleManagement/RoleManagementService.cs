@@ -98,6 +98,16 @@ public class RoleManagementService : IRoleManagementService
         users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase))
         ?? throw new KeyNotFoundException($"User '{userId}' not found.");
 
+    public void AddUser(User user)
+    {
+        users.Add(user);
+    }
+
+    public void AddRole(Role role)
+    {
+        roles.Add(role);
+    }
+
     private void ValidateInput(string input, string errorMessage)
     {
         if (string.IsNullOrWhiteSpace(input))
