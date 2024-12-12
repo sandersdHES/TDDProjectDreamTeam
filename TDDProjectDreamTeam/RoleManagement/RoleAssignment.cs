@@ -1,8 +1,7 @@
 using System;
 using Moq;
 using SchoolApp.RoleManagement;
-using SchoolApp.RoleManagement.Models;
-using SchoolApp.RoleManagement.Models; // Assuming Role class is in this namespace
+using SchoolApp.Models;
 
 namespace TDDProjectDreamTeam;
 

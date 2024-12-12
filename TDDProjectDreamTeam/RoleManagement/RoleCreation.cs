@@ -1,6 +1,6 @@
 using Moq;
 using SchoolApp.RoleManagement;
-using SchoolApp.RoleManagement.Models;
+using SchoolApp.Models;
 
 namespace TDDProjectDreamTeam
 {

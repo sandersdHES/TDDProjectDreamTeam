@@ -1,4 +1,8 @@
 using SchoolApp.Models;
+using SchoolApp.UserAuthentication;
+using SchoolApp.UserAuthentication.Models;
+using SchoolApp.UserRegistration;
+using SchoolApp.UserRegistration.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +13,15 @@ namespace SchoolApp
     {
         private readonly List<User> users;
         private readonly Action<string> logger;
+        private readonly IHashingService hashingService;
+        private readonly IUserRegistrationService userRegistrationService;
 
-        public UserService(Action<string> logger = null)
+        public UserService(IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
         {
             users = new List<User>();
             this.logger = logger ?? Console.WriteLine;
+            this.hashingService = hashingService;
+            this.userRegistrationService = userRegistrationService;
         }
 
         public User RegisterUser(User user, string password)
@@ -21,13 +29,10 @@ namespace SchoolApp
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
 
-            if (string.IsNullOrWhiteSpace(password))
-                throw new ArgumentException("Password cannot be empty.", nameof(password));
+            if (!userRegistrationService.RegisterUser(user.Name, user.Email, password))
+                throw new ArgumentException("Invalid user registration details.");
 
-            if (users.Any(u => u.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidOperationException("A user with this email already exists.");
-
-            user.PasswordHash = HashPassword(password);
+            user.PasswordHash = hashingService.HashPassword(password);
             users.Add(user);
             logger?.Invoke($"User '{user.Name}' registered with email '{user.Email}'.");
 
@@ -43,7 +48,7 @@ namespace SchoolApp
                 throw new ArgumentException("Password cannot be empty.", nameof(password));
 
             var user = users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-            if (user == null || !VerifyPassword(password, user.PasswordHash))
+            if (user == null || !hashingService.VerifyPassword(password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid email or password.");
 
             logger?.Invoke($"User '{user.Name}' authenticated.");
@@ -57,18 +62,6 @@ namespace SchoolApp
                 throw new KeyNotFoundException($"User with ID '{userId}' not found.");
 
             return user;
-        }
-
-        private string HashPassword(string password)
-        {
-            // Implement a hashing algorithm here
-            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
-        }
-
-        private bool VerifyPassword(string password, string passwordHash)
-        {
-            // Implement password verification here
-            return passwordHash == Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
 }
