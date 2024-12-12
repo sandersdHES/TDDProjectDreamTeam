@@ -57,10 +57,36 @@ public class RoleUpdateByAdmin
                        .Returns(false);
 
         // Act & Assert
+
         var exception = Assert.Throws<UnauthorizedAccessException>(() =>
             roleService.UpdateUserRole(nonAdminId, userId, newRole)
         );
         Assert.Equal("Only admins can update roles.", exception.Message);
+    }
+
+    //add test for checking that it returns false if new roll is not valid
+    [Fact]
+    public void UpdateUserRole_InvalidRole_ShouldReturnFalse()
+    {
+        // Arrange
+        var adminId = "admin123";
+        var userId = "user123";
+        var invalidRole = new Role("InvalidRole", null);
+
+        var adminRole = new Role("Admin", new List<string> { "Create", "Read", "Update", "Delete" });
+
+        roleService.AddRole(adminRole);
+        roleService.AddUser(new User(adminId, "Admin User", adminRole));
+
+        mockRoleService.Setup(service => service.UpdateUserRole(adminId, userId, invalidRole))
+            .Returns(false);
+
+        // Act
+        var result = roleService.UpdateUserRole(adminId, userId, invalidRole);
+
+        // Assert
+        Assert.False(result);
+
     }
 
 }
