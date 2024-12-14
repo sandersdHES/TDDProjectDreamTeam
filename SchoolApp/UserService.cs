@@ -16,9 +16,9 @@ namespace SchoolApp
         private readonly IHashingService hashingService;
         private readonly IUserRegistrationService userRegistrationService;
 
-        public UserService(IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
+        public UserService(List<User> users,IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
         {
-            users = new List<User>();
+            this.users = users;
             this.logger = logger ?? Console.WriteLine;
             this.hashingService = hashingService;
             this.userRegistrationService = userRegistrationService;
@@ -55,9 +55,9 @@ namespace SchoolApp
             return user;
         }
 
-        public User GetUserById(int userId)
+        public User GetUserById(string userId)
         {
-            var user = users.FirstOrDefault(u => u.Id.Equals(userId.ToString(), StringComparison.OrdinalIgnoreCase));
+            var user = users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase));
             if (user == null)
                 throw new KeyNotFoundException($"User with ID '{userId}' not found.");
 

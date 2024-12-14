@@ -11,6 +11,6 @@ namespace SchoolApp
     {
         User RegisterUser(User user, string password);
         User AuthenticateUser(string email, string password);
-        User GetUserById(int userId);
+        User GetUserById(string userId);
     }
 }
