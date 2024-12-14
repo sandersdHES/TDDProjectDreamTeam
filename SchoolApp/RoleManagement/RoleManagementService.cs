@@ -37,6 +37,9 @@ public class RoleManagementService : IRoleManagementService
 
         // Find the user
         var user = GetUser(userId);
+        if (user == null) {
+            return false; // User not found
+        }
 
         // Assign the role to the user
         var oldRole = user.Role;
@@ -87,7 +90,7 @@ public class RoleManagementService : IRoleManagementService
         return roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
     }
 
-    private User GetUser(string userId) =>
+    public User GetUser(string userId) =>
         users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase))
         ?? throw new KeyNotFoundException($"User '{userId}' not found.");
 
