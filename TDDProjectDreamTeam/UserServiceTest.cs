@@ -1,11 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
+using Xunit;
 using Moq;
 using SchoolApp;
 using SchoolApp.Models;
 using SchoolApp.UserAuthentication;
 using SchoolApp.UserRegistration;
-using Xunit;
+using System.Collections.Generic;
+using SchoolApp.Repositories;
 
 namespace TDDProjectDreamTeam
 {
@@ -13,15 +14,21 @@ namespace TDDProjectDreamTeam
     {
         private readonly Mock<IHashingService> _mockHashingService;
         private readonly Mock<IUserRegistrationService> _mockUserRegistrationService;
+        private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly UserService _userService;
-        private readonly List<User> _users;
 
         public UserServiceTest()
         {
             _mockHashingService = new Mock<IHashingService>();
             _mockUserRegistrationService = new Mock<IUserRegistrationService>();
-            _users = new List<User>();
-            _userService = new UserService(_users,_mockHashingService.Object, _mockUserRegistrationService.Object, message => { });
+            _mockUserRepository = new Mock<IUserRepository>();
+
+            _userService = new UserService(
+                _mockUserRepository.Object,
+                _mockHashingService.Object,
+                _mockUserRegistrationService.Object,
+                message => { }
+            );
         }
 
         [Fact]
@@ -50,6 +57,7 @@ namespace TDDProjectDreamTeam
 
             Assert.Equal(user, result);
             Assert.Equal("hashedPassword", user.PasswordHash);
+            _mockUserRepository.Verify(repo => repo.AddUser(user), Times.Once);
         }
 
         [Fact]
@@ -68,7 +76,7 @@ namespace TDDProjectDreamTeam
         public void AuthenticateUser_InvalidEmailOrPassword_ThrowsUnauthorizedAccessException()
         {
             var user = new User("1", "Test User", "test@example.com", "hashedPassword", new Role("User", new List<string>()));
-            _users.Add(user);
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail("test@example.com")).Returns(user);
             _mockHashingService.Setup(x => x.VerifyPassword("password", "hashedPassword")).Returns(false);
 
             Assert.Throws<UnauthorizedAccessException>(() => _userService.AuthenticateUser("test@example.com", "password"));
@@ -78,10 +86,8 @@ namespace TDDProjectDreamTeam
         public void AuthenticateUser_ValidCredentials_ReturnsAuthenticatedUser()
         {
             var user = new User("1", "Test User", "test@example.com", "hashedPassword", new Role("User", new List<string>()));
-            _users.Add(user);
+            _mockUserRepository.Setup(repo => repo.GetUserByEmail("test@example.com")).Returns(user);
             _mockHashingService.Setup(x => x.VerifyPassword("password", "hashedPassword")).Returns(true);
-            // mock the correct registery of the user
-            _mockUserRegistrationService.Setup(x => x.RegisterUser(user.Name, user.Email, "password")).Returns(true);
 
             var result = _userService.AuthenticateUser("test@example.com", "password");
 
@@ -91,6 +97,8 @@ namespace TDDProjectDreamTeam
         [Fact]
         public void GetUserById_UserNotFound_ThrowsKeyNotFoundException()
         {
+            _mockUserRepository.Setup(repo => repo.GetUser("1")).Throws(new KeyNotFoundException());
+
             Assert.Throws<KeyNotFoundException>(() => _userService.GetUserById("1"));
         }
 
@@ -98,7 +106,7 @@ namespace TDDProjectDreamTeam
         public void GetUserById_UserFound_ReturnsUser()
         {
             var user = new User("1", "Test User", "test@example.com", "hashedPassword", new Role("User", new List<string>()));
-            _users.Add(user);
+            _mockUserRepository.Setup(repo => repo.GetUser("1")).Returns(user);
 
             var result = _userService.GetUserById("1");
 

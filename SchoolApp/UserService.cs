@@ -1,27 +1,24 @@
 using SchoolApp.Models;
+using SchoolApp.Repositories;
 using SchoolApp.UserAuthentication;
-using SchoolApp.UserAuthentication.Models;
 using SchoolApp.UserRegistration;
-using SchoolApp.UserRegistration.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SchoolApp
 {
     public class UserService : IUserService
     {
-        private readonly List<User> users;
-        private readonly Action<string> logger;
-        private readonly IHashingService hashingService;
-        private readonly IUserRegistrationService userRegistrationService;
+        private readonly IUserRepository _userRepository;
+        private readonly Action<string> _logger;
+        private readonly IHashingService _hashingService;
+        private readonly IUserRegistrationService _userRegistrationService;
 
-        public UserService(List<User> users,IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
+        public UserService(IUserRepository userRepository, IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
         {
-            this.users = users;
-            this.logger = logger ?? Console.WriteLine;
-            this.hashingService = hashingService;
-            this.userRegistrationService = userRegistrationService;
+            _userRepository = userRepository;
+            _logger = logger ?? Console.WriteLine;
+            _hashingService = hashingService;
+            _userRegistrationService = userRegistrationService;
         }
 
         public User RegisterUser(User user, string password)
@@ -29,12 +26,12 @@ namespace SchoolApp
             if (user == null)
                 throw new ArgumentNullException(nameof(user));
 
-            if (!userRegistrationService.RegisterUser(user.Name, user.Email, password))
+            if (!_userRegistrationService.RegisterUser(user.Name, user.Email, password))
                 throw new ArgumentException("Invalid user registration details.");
 
-            user.PasswordHash = hashingService.HashPassword(password);
-            users.Add(user);
-            logger?.Invoke($"User '{user.Name}' registered with email '{user.Email}'.");
+            user.PasswordHash = _hashingService.HashPassword(password);
+            _userRepository.AddUser(user);
+            _logger?.Invoke($"User '{user.Name}' registered with email '{user.Email}'.");
 
             return user;
         }
@@ -47,17 +44,17 @@ namespace SchoolApp
             if (string.IsNullOrWhiteSpace(password))
                 throw new ArgumentException("Password cannot be empty.", nameof(password));
 
-            var user = users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-            if (user == null || !hashingService.VerifyPassword(password, user.PasswordHash))
+            var user = _userRepository.GetUserByEmail(email);
+            if (user == null || !_hashingService.VerifyPassword(password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid email or password.");
 
-            logger?.Invoke($"User '{user.Name}' authenticated.");
+            _logger?.Invoke($"User '{user.Name}' authenticated.");
             return user;
         }
 
         public User GetUserById(string userId)
         {
-            var user = users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase));
+            var user = _userRepository.GetUser(userId);
             if (user == null)
                 throw new KeyNotFoundException($"User with ID '{userId}' not found.");
 

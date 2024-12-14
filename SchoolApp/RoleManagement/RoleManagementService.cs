@@ -1,29 +1,30 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using global::SchoolApp.Repositories;
 using SchoolApp.Models;
 
 namespace SchoolApp.RoleManagement;
 
 public class RoleManagementService : IRoleManagementService
 {
-    private readonly List<Role> roles; // List of defined roles
-    private readonly List<User> users; // List of users in the system
-    private readonly Action<string> logger;
+    private readonly IUserRepository _userRepository;
+    private readonly IRoleRepository _roleRepository;
 
-    public RoleManagementService()
+    public RoleManagementService(IUserRepository userRepository, IRoleRepository roleRepository)
     {
-        roles = new List<Role>();
-        users = new List<User>();
-        this.logger = logger ?? Console.WriteLine;
+        _userRepository = userRepository;
+        _roleRepository = roleRepository;
     }
 
     public bool CreateRole(Role role)
     {
         ValidateInput(role?.Name, "Role name cannot be empty.");
 
-        if (roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase)))
+        if (_roleRepository.RoleExists(role.Name))
             return false; // Role already exists
 
-        roles.Add(role);
+        _roleRepository.AddRole(role);
         return true;
     }
 
@@ -32,17 +33,13 @@ public class RoleManagementService : IRoleManagementService
         ValidateInput(userId, "User ID cannot be empty.");
 
         // Check if the role exists
-        if (!IsRoleValid(role))
+        if (!_roleRepository.RoleExists(role.Name))
             return false; // Cannot assign a non-existent role
 
         // Find the user
-        var user = GetUser(userId);
-        if (user == null) {
-            return false; // User not found
-        }
+        var user = _userRepository.GetUser(userId);
 
         // Assign the role to the user
-        var oldRole = user.Role;
         user.Role = role;
         return true;
     }
@@ -53,7 +50,7 @@ public class RoleManagementService : IRoleManagementService
         ValidateInput(feature, "Feature cannot be empty.");
 
         // Find the user
-        var user = GetUser(userId);
+        var user = _userRepository.GetUser(userId);
 
         // Check if the role has access to the specified feature
         return user.Role.HasPermission(feature);
@@ -61,47 +58,34 @@ public class RoleManagementService : IRoleManagementService
 
     public bool UpdateUserRole(string adminId, string userId, Role newRole)
     {
-        var admin = GetUser(adminId);
+        var admin = _userRepository.GetUser(adminId);
         if (!admin.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-                throw new UnauthorizedAccessException("Only admins can update roles.");
+            throw new UnauthorizedAccessException("Only admins can update roles.");
 
-        if (!IsRoleValid(newRole))
+        if (!_roleRepository.RoleExists(newRole.Name))
         {
             return false; // New role does not exist
         }
 
-        var user = GetUser(userId);
+        var user = _userRepository.GetUser(userId);
 
         // Check if the user being updated is the only admin
         if (user.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase))
         {
-            var adminCount = users.Count(u => u.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+            //get all users and count them
+            var adminCount = _userRepository.GetUsers()
+                .Count(u => u.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase));
             if (adminCount <= 1)
                 throw new InvalidOperationException("Cannot update the last remaining admin to another role.");
         }
 
-        var oldRole = user.Role;
         user.Role = newRole;
         return true;
     }
 
     public bool IsRoleValid(Role role)
     {
-        return roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase));
-    }
-
-    public User GetUser(string userId) =>
-        users.FirstOrDefault(u => u.Id.Equals(userId, StringComparison.OrdinalIgnoreCase))
-        ?? throw new KeyNotFoundException($"User '{userId}' not found.");
-
-    public void AddUser(User user)
-    {
-        users.Add(user);
-    }
-
-    public void AddRole(Role role)
-    {
-        roles.Add(role);
+        return _roleRepository.RoleExists(role.Name);
     }
 
     private void ValidateInput(string input, string errorMessage)
@@ -110,4 +94,5 @@ public class RoleManagementService : IRoleManagementService
             throw new ArgumentException(errorMessage);
     }
 }
+
 
