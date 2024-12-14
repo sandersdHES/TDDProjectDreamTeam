@@ -56,6 +56,13 @@ namespace TDDProjectDreamTeam.RoleManagement
             Assert.Equal("Role name cannot be empty.", exception.Message);
         }
 
+        [Fact]
+        public void CreateRole_NullRole_ShouldThrowException()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => _roleService.CreateRole(null));
+            Assert.Equal("Role name cannot be empty.", exception.Message);
+        }
+
         // Role Assignment Tests
         [Fact]
         public void AssignRole_ValidRole_ShouldSucceed()
@@ -173,5 +180,17 @@ namespace TDDProjectDreamTeam.RoleManagement
 
             Assert.Equal("Only admins can update roles.", exception.Message);
         }
+
+        [Fact]
+        public void UpdateUserRole_NonExistentRole_ReturnsFalse()
+        {
+            var adminRole = new Role("Admin", null);
+            var adminUser = new User("admin123", "AdminUser", adminRole);
+            _mockRoleRepo.Setup(repo => repo.RoleExists(It.IsAny<string>())).Returns(false);
+            _mockUserRepo.Setup(repo => repo.GetUser(adminUser.Id)).Returns(adminUser);
+            var result = _roleService.UpdateUserRole(adminUser.Id, "user456", new Role("NonExistent", null));
+            Assert.False(result, "Updating to a non-existent role should return false.");
+        }
+
     }
 }

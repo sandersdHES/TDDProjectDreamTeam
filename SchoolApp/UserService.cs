@@ -9,14 +9,12 @@ namespace SchoolApp
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly Action<string> _logger;
         private readonly IHashingService _hashingService;
         private readonly IUserRegistrationService _userRegistrationService;
 
         public UserService(IUserRepository userRepository, IHashingService hashingService, IUserRegistrationService userRegistrationService, Action<string> logger = null)
         {
             _userRepository = userRepository;
-            _logger = logger ?? Console.WriteLine;
             _hashingService = hashingService;
             _userRegistrationService = userRegistrationService;
         }
@@ -31,7 +29,6 @@ namespace SchoolApp
 
             user.PasswordHash = _hashingService.HashPassword(password);
             _userRepository.AddUser(user);
-            _logger?.Invoke($"User '{user.Name}' registered with email '{user.Email}'.");
 
             return user;
         }
@@ -47,8 +44,6 @@ namespace SchoolApp
             var user = _userRepository.GetUserByEmail(email);
             if (user == null || !_hashingService.VerifyPassword(password, user.PasswordHash))
                 throw new UnauthorizedAccessException("Invalid email or password.");
-
-            _logger?.Invoke($"User '{user.Name}' authenticated.");
             return user;
         }
 
