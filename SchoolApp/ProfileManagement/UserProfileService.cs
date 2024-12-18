@@ -1,117 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using BCrypt.Net;
-using SchoolApp.ProfileManagement.Models;
-
+using SchoolApp.Models;
+using SchoolApp.Repositories;
+using SchoolApp.UserAuthentication;
 
 namespace SchoolApp.ProfileManagement
 {
     public class UserProfileService : IUserProfileService
     {
-        private readonly Dictionary<string, UserProfile> _userProfiles = new();
-        private readonly HashSet<string> _usedEmails = new(StringComparer.OrdinalIgnoreCase);
+        private readonly IUserRepository _userRepository;
+        private readonly IHashingService _hashingService;
 
-        public UserProfile GetProfile(string userId)
+        public UserProfileService(IUserRepository userRepository, IHashingService hashingService)
         {
-            if (_userProfiles.TryGetValue(userId, out var profile))
-            {
-                return profile;
-            }
-
-            return null; // User not found
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _hashingService = hashingService ?? throw new ArgumentNullException(nameof(hashingService));
         }
 
-        public bool UpdateProfile(string userId, UserProfile updatedProfile)
+        public User GetProfile(string userId)
         {
-            if (!_userProfiles.ContainsKey(userId))
+            return _userRepository.GetUser(userId);
+        }
+
+        public bool UpdateProfile(string userId, User updatedUser)
+        {
+            var existingUser = _userRepository.GetUser(userId);
+            if (existingUser == null)
                 return false;
 
-            if (!IsEmailValid(updatedProfile.Email))
+            if (!string.IsNullOrWhiteSpace(updatedUser.Email) && !IsEmailValid(updatedUser.Email))
                 return false;
 
-            if (_usedEmails.Contains(updatedProfile.Email) && _userProfiles[userId].Email != updatedProfile.Email)
+            if (!string.IsNullOrWhiteSpace(updatedUser.Email) && existingUser.Email != updatedUser.Email && _userRepository.GetUserByEmail(updatedUser.Email) != null)
                 return false;
 
-            if (!IsFieldMandatory(updatedProfile.Name))
+            if (string.IsNullOrWhiteSpace(updatedUser.Name) || updatedUser.Name.Length > 50)
                 return false;
 
-            if (!IsFieldLengthValid(updatedProfile.Name, 50))
-                return false;
+            existingUser.Name = updatedUser.Name ?? existingUser.Name;
+            existingUser.Email = updatedUser.Email ?? existingUser.Email;
+            existingUser.Role = updatedUser.Role ?? existingUser.Role;
 
-            if (updatedProfile.UserId != userId)
-                return false;
-
-            _userProfiles[userId] = updatedProfile;
-            _usedEmails.Add(updatedProfile.Email);
-
+            _userRepository.UpdateUser(existingUser);
             return true;
-        }
-
-        public bool IsEmailValid(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                return false;
-
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
-            return emailRegex.IsMatch(email);
-        }
-
-        public bool IsFieldMandatory(string field)
-        {
-            return !string.IsNullOrWhiteSpace(field);
-        }
-
-        public bool IsFieldLengthValid(string field, int maxLength)
-        {
-            return field.Length <= maxLength;
-        }
-
-        public bool IsAuthorizedToUpdateProfile(string userId, string profileId)
-        {
-            return userId == profileId;
         }
 
         public bool UpdatePassword(string userId, string currentPassword, string newPassword)
         {
-            if (!_userProfiles.ContainsKey(userId))
-                return false;
-
-            var profile = _userProfiles[userId];
-            if (!string.Equals(profile.PasswordHash, currentPassword, StringComparison.Ordinal))
+            var user = _userRepository.GetUser(userId);
+            if (user == null || !_hashingService.VerifyPassword(currentPassword, user.PasswordHash))
                 return false;
 
             if (!IsPasswordStrong(newPassword))
                 return false;
 
-            profile.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            user.PasswordHash = _hashingService.HashPassword(newPassword);
+            _userRepository.UpdateUser(user);
             return true;
         }
 
-        public bool UploadProfilePicture(string userId, byte[] picture)
+        public bool IsAuthorizedToUpdateProfile(string userId, string profileId)
         {
-            if (!_userProfiles.ContainsKey(userId))
+            var user = _userRepository.GetUser(userId);
+            if (user == null)
                 return false;
 
-            const int maxFileSize = 5 * 1024 * 1024; // 5 MB
-            if (picture.Length > maxFileSize)
+            return userId == profileId || (user.Role != null && user.Role.Name == "Admin" && user.Role.Permissions.Contains("ManageUsers"));
+        }
+
+        private bool IsEmailValid(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
                 return false;
 
-            var profile = _userProfiles[userId];
-            profile.ProfilePicture = picture;
-
-            return true;
+            var emailRegex = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", System.Text.RegularExpressions.RegexOptions.Compiled);
+            return emailRegex.IsMatch(email);
         }
 
         private bool IsPasswordStrong(string password)
         {
-            if (password.Length < 8)
-                return false;
-
-            return Regex.IsMatch(password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            return password.Length >= 8 &&
+                   System.Text.RegularExpressions.Regex.IsMatch(password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
         }
     }
 }

@@ -44,6 +44,19 @@ namespace SchoolApp.Repositories
             return _users.FirstOrDefault(u => u.Email == email)
                    ?? throw new KeyNotFoundException($"User with email '{email}' not found.");
         }
+
+        public void UpdateUser(User updatedUser)
+        {
+            var existingUser = GetUser(updatedUser.Id);
+
+            if (existingUser == null)
+                throw new KeyNotFoundException($"User '{updatedUser.Id}' not found for update.");
+
+            existingUser.Name = updatedUser.Name;
+            existingUser.Email = updatedUser.Email;
+            existingUser.PasswordHash = updatedUser.PasswordHash;
+            existingUser.Role = updatedUser.Role;
+        }
     }
 
 }
