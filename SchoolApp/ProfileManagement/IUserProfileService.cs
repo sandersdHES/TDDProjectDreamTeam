@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SchoolApp.Models;
 
-namespace SchoolApp.ProfileManagement.Models
+namespace SchoolApp.ProfileManagement
 {
     public interface IUserProfileService
     {
-        UserProfile GetProfile(string userId);
-        bool UpdateProfile(string userId, UserProfile updatedProfile);
-        bool IsEmailValid(string email);
-        bool IsFieldMandatory(string field);
-        bool IsFieldLengthValid(string field, int maxLength);
-        bool IsAuthorizedToUpdateProfile(string userId, string profileId);
+        User GetProfile(string userId);
+        bool UpdateProfile(string userId, User updatedUser);
         bool UpdatePassword(string userId, string currentPassword, string newPassword);
-        bool UploadProfilePicture(string userId, byte[] picture);
+        bool IsAuthorizedToUpdateProfile(string userId, string profileId);
     }
-
 }

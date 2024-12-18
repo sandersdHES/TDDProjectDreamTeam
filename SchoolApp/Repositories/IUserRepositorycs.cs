@@ -1,9 +1,5 @@
-﻿using SchoolApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using SchoolApp.Models;
 
 namespace SchoolApp.Repositories
 {
@@ -15,6 +11,6 @@ namespace SchoolApp.Repositories
         bool UserExists(string userId);
         IEnumerable<User> GetUsers();
         User GetUserByEmail(string email);
+        void UpdateUser(User user);
     }
-
 }
