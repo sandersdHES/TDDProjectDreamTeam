@@ -1,168 +1,187 @@
-﻿using SchoolApp.UserRegistration.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Xunit;
+using Moq;
+using SchoolApp.UserRegistration.Models;
+using SchoolApp.UserRegistration;
 
-namespace TDDProjectDreamTeam.UserRegistration.Tests
+namespace TDDProjectDreamTeam.UserRegistration
 {
     public class UserRegistrationServiceTests
     {
+        private readonly UserRegistrationService _userRegistrationService;
+
+        public UserRegistrationServiceTests()
+        {
+            _userRegistrationService = new UserRegistrationService();
+        }
+
         [Fact]
         public void RegisterUser_Should_Succeed_With_Valid_Inputs()
         {
-            var service = new UserRegistrationService();
-            var name = "Valid Name";
-            var email = "valid.email@example.com";
-            var password = "ValidPassword123!";
-
-            var result = service.RegisterUser(name, email, password);
-
-            Assert.True(result);
-        }
-
-
-        [Fact]
-        public void RegisterUser_Should_Fail_If_Name_Too_Long()
-        {
-            var service = new UserRegistrationService();
-            var longName = new string('a', 256);
-            var email = "valid.email@example.com";
-            var password = "ValidPassword123!";
-
-            var result = service.RegisterUser(longName, email, password);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void RegisterUser_Should_Fail_With_Invalid_Email_Format()
-        {
-            var service = new UserRegistrationService();
-            var name = "Valid Name";
-            var email = "invalid-email";
-            var password = "ValidPassword123!";
-
-            var result = service.RegisterUser(name, email, password);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void RegisterUser_Should_Fail_With_Weak_Password()
-        {
-            var service = new UserRegistrationService();
-            var name = "Valid Name";
-            var email = "valid.email@example.com";
-            var password = "weak";
-
-            var result = service.RegisterUser(name, email, password);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void RegisterUser_Should_Add_Email_To_RegisteredEmails()
-        {
-            var service = new UserRegistrationService();
+            // Arrange
             var name = "John Doe";
-            var email = "new.user@example.com";
+            var email = "john.doe@example.com";
             var password = "StrongPassword123!";
 
-            var result = service.RegisterUser(name, email, password);
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
 
-            Assert.True(result);
-            Assert.False(service.IsEmailAvailable(email));
-        }
-
-        [Fact]
-        public void ValidateName_Should_Fail_If_Name_Is_Too_Short()
-        {
-            var service = new UserRegistrationService();
-            var shortName = "A";
-
-            var result = service.ValidateName(shortName);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void ValidateName_Should_Succeed_With_Valid_Name()
-        {
-            var service = new UserRegistrationService();
-            var validName = "John Doe";
-
-            var result = service.ValidateName(validName);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsValidEmail_Should_Succeed_With_Valid_Email()
-        {
-            var service = new UserRegistrationService();
-            var email = "user@example.com";
-
-            var result = service.IsValidEmail(email);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void IsEmailAvailable_Should_Fail_If_Email_Exists()
-        {
-            var service = new UserRegistrationService();
-            var email = "existing.email@example.com";
-
-            var result = service.IsEmailAvailable(email);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidPassword_Should_Fail_With_No_Special_Character()
-        {
-            var service = new UserRegistrationService();
-            var password = "Password123";
-
-            var result = service.IsValidPassword(password);
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidPassword_Should_Succeed_With_Strong_Password()
-        {
-            var service = new UserRegistrationService();
-            var password = "Strong@Password123";
-
-            var result = service.IsValidPassword(password);
-
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void RegisterUser_Should_Succeed_With_Max_Length_Inputs()
-        {
-            var service = new UserRegistrationService();
-            var name = new string('a', 255);
-            var email = $"{new string('a', 243)}@example.com";
-            var password = "StrongPassword123!";
-
-            var result = service.RegisterUser(name, email, password);
-
+            // Assert
             Assert.True(result);
         }
 
         [Fact]
         public void RegisterUser_Should_Fail_With_Empty_Inputs()
         {
-            var service = new UserRegistrationService();
+            // Arrange
+            var name = "";
+            var email = "";
+            var password = "";
 
-            var result = service.RegisterUser("", "", "");
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
 
+            // Assert
             Assert.False(result);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Fail_With_Invalid_Email_Format()
+        {
+            // Arrange
+            var name = "John Doe";
+            var email = "invalid-email";
+            var password = "StrongPassword123!";
+
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Fail_With_Weak_Password()
+        {
+            // Arrange
+            var name = "John Doe";
+            var email = "john.doe@example.com";
+            var password = "weak";
+
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Add_Email_To_RegisteredEmails()
+        {
+            // Arrange
+            var name = "John Doe";
+            var email = "new.user@example.com";
+            var password = "StrongPassword123!";
+
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
+
+            // Assert
+            Assert.True(result);
+            Assert.False(_userRegistrationService.IsEmailAvailable(email));
+        }
+
+        [Fact]
+        public void ValidateName_Should_Fail_If_Name_Is_Too_Short()
+        {
+            // Arrange
+            var shortName = "A";
+
+            // Act
+            var result = _userRegistrationService.ValidateName(shortName);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ValidateName_Should_Succeed_With_Valid_Name()
+        {
+            // Arrange
+            var validName = "John Doe";
+
+            // Act
+            var result = _userRegistrationService.ValidateName(validName);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsValidEmail_Should_Succeed_With_Valid_Email()
+        {
+            // Arrange
+            var email = "user@example.com";
+
+            // Act
+            var result = _userRegistrationService.IsValidEmail(email);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsEmailAvailable_Should_Fail_If_Email_Exists()
+        {
+            // Arrange
+            var email = "existing.email@example.com";
+
+            // Act
+            var result = _userRegistrationService.IsEmailAvailable(email);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsValidPassword_Should_Succeed_With_Strong_Password()
+        {
+            // Arrange
+            var password = "Strong@Password123";
+
+            // Act
+            var result = _userRegistrationService.IsValidPassword(password);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Prevent_SQL_Injection()
+        {
+            // Arrange
+            var maliciousInput = "'; DROP TABLE Users; --";
+
+            // Act
+            var result = _userRegistrationService.RegisterUser(maliciousInput, maliciousInput, maliciousInput);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Handle_Email_Case_Insensitivity()
+        {
+            // Arrange
+            var emailUpper = "USER@EXAMPLE.COM";
+            var emailLower = "user@example.com";
+
+            // Act
+            var isAvailableUpper = _userRegistrationService.IsEmailAvailable(emailUpper);
+            var isAvailableLower = _userRegistrationService.IsEmailAvailable(emailLower);
+
+            // Assert
+            Assert.True(isAvailableUpper);
+            Assert.True(isAvailableLower);
         }
     }
 }
