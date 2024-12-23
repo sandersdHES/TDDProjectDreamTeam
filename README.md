@@ -1,6 +1,10 @@
 # Unit Test Documentation
 
-Welcome to our TDD project. This project will focus on tests related to the module User Management. This module is split into 4 main tasks:
+Welcome to our TDD project !
+
+This project aims to provide a comprehensive user management system with functionalities for role management, user registration, profile management, and user authentication. It is built using .NET and follows Test-Driven Development (TDD) principles.
+
+We will focus on tests related to the module User Management. This module is split into 4 main tasks:
 
 1. Role Management
 2. User Registration
@@ -8,6 +12,10 @@ Welcome to our TDD project. This project will focus on tests related to the modu
 4. User Authentication
 
 This will be useful to create a fully functionnal user service, containing the capabilities of managing the afro-mentionned tasks.
+
+Enjoy reading through our Documentation !
+
+**Dylan Sanderson, Johann Von Rotten, Maxime Bossi, Nadja Lötscher**
 
 ## Summary
 
@@ -305,13 +313,15 @@ The `IUserRegistrationService` interface defines the following methods:
 | Method Name                       | Description                                                                 |
 |-----------------------------------|-----------------------------------------------------------------------------|
 | `RegisterUser(string name, string email, string password)` | Registers a new user with the specified name, email, and password. |
+| `IsValidLength(string name, string email, string password)`       | Validates the lengths of the provided name, email, and password.          |
 | `ValidateName(string name)`       | Validates whether the provided name meets the application's rules.          |
 | `IsValidEmail(string email)`      | Validates whether the provided email is in a valid format.                  |
 | `IsEmailAvailable(string email)`  | Checks if the email is available (not already registered).                  |
 | `IsValidPassword(string password)`| Validates whether the provided password meets the application's security requirements. |
 
-
 ### Test Cases
+
+We have splitted our tests into 2 main categories, the registration of the user itself and the checks done to authorize it. 
 
 1. **User Registration**:
    - **RegisterUser_Should_Succeed_With_Valid_Inputs**: Verifies that registering a user with valid inputs succeeds.
@@ -321,15 +331,11 @@ The `IUserRegistrationService` interface defines the following methods:
    - **RegisterUser_Should_Prevent_SQL_Injection**: Verifies that registering a user with SQL injection attempts fails.
    - **RegisterUser_Should_Handle_Email_Case_Insensitivity**: Verifies that email case insensitivity is handled correctly during registration.
 
-2. **Name Validation**:
+2. **Input Validation**:
    - **ValidateName_Should_Fail_If_Name_Is_Too_Short**: Verifies that name validation fails if the name is too short.
    - **ValidateName_Should_Succeed_With_Valid_Name**: Verifies that name validation succeeds with a valid name.
-
-3. **Email Validation**:
    - **IsValidEmail_Should_Succeed_With_Valid_Email**: Verifies that email validation succeeds with a valid email.
    - **IsEmailAvailable_Should_Fail_If_Email_Exists**: Verifies that email availability check fails if the email already exists.
-
-4. **Password Validation**:
    - **IsValidPassword_Should_Succeed_With_Strong_Password**: Verifies that password validation succeeds with a strong password.
 
 ### Code coverage
@@ -354,10 +360,6 @@ The `IUserRegistrationService` interface defines the following methods:
 - **Test**: `RegisterUser_Should_Prevent_SQL_Injection`
 - **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with SQL injection attempts.
 
-#### Email case insensitivity must be handled correctly during registration.
-- **Test**: `RegisterUser_Should_Handle_Email_Case_Insensitivity`
-- **Description**: This test verifies that the `RegisterUser` method handles email case insensitivity correctly during registration.
-
 ## Profile Management
 
 The User Profile Service is responsible for handling all operations related to user profiles within the system. The goal of this service is to ensure that user profiles are managed efficiently and securely.
@@ -372,6 +374,8 @@ The `IUserProfileService` interface defines the following methods:
 | `IsAuthorizedToUpdateProfile(string userId, string profileId)` | Checks if a user is authorized to update a specific profile.                  |
 
 ### Test Cases
+
+We have splitted our tests into 4 main categories, each one of them representing a main functionnality of the Profile Management Service. 
 
 1. **Profile Retrieval**:
    - **GetProfile_WithValidUserId_ShouldReturnUserProfile**: Verifies that retrieving a profile with a valid user ID returns the correct user profile.
@@ -402,29 +406,13 @@ The `IUserProfileService` interface defines the following methods:
 - **Test**: `GetProfile_WithValidUserId_ShouldReturnUserProfile`
 - **Description**: This test verifies that the `GetProfile` method returns the correct user profile when a valid user ID is provided.
 
-#### A user must not be able to retrieve a profile with an unauthorized user ID.
-- **Test**: `GetProfile_WithUnauthorizedUserId_ShouldReturnNull`
-- **Description**: This test verifies that the `GetProfile` method returns null when an unauthorized user ID is provided.
-
 #### A user must be able to update their profile with valid data.
 - **Test**: `UpdateProfile_WithValidData_ShouldUpdateUser`
 - **Description**: This test verifies that the `UpdateProfile` method returns `true` and updates the user profile when valid data is provided.
 
-#### A user must not be able to update their profile with an invalid email.
-- **Test**: `UpdateProfile_WithInvalidEmail_ShouldReturnFalse`
-- **Description**: This test verifies that the `UpdateProfile` method returns `false` when an invalid email is provided.
-
 #### A user must not be able to update their profile with a duplicate email.
 - **Test**: `UpdateProfile_WithDuplicateEmail_ShouldReturnFalse`
 - **Description**: This test verifies that the `UpdateProfile` method returns `false` when a duplicate email is provided.
-
-#### A user must be able to update their password with the correct current password.
-- **Test**: `UpdatePassword_WithCorrectCurrentPassword_ShouldUpdatePassword`
-- **Description**: This test verifies that the `UpdatePassword` method returns `true` and updates the password when the correct current password is provided.
-
-#### A user must not be able to update their password with an incorrect current password.
-- **Test**: `UpdatePassword_WithIncorrectCurrentPassword_ShouldReturnFalse`
-- **Description**: This test verifies that the `UpdatePassword` method returns `false` when an incorrect current password is provided.
 
 #### A user must not be able to update their password with a weak new password.
 - **Test**: `UpdatePassword_WithWeakNewPassword_ShouldReturnFalse`
@@ -433,10 +421,6 @@ The `IUserProfileService` interface defines the following methods:
 #### An admin must be authorized to update any user's profile.
 - **Test**: `IsAuthorizedToUpdateProfile_ByAdmin_ShouldReturnTrue`
 - **Description**: This test verifies that the `IsAuthorizedToUpdateProfile` method returns `true` when an admin attempts to update a profile.
-
-#### A non-admin must not be authorized to update another user's profile.
-- **Test**: `IsAuthorizedToUpdateProfile_ByNonAdmin_ShouldReturnFalse`
-- **Description**: This test verifies that the `IsAuthorizedToUpdateProfile` method returns `false` when a non-admin attempts to update another user's profile.
 
 ## User Authentication
 
@@ -466,6 +450,8 @@ The `IAuthService` interface defines the following methods:
 
 ### Test Cases
 
+We have splitted our tests into 3 main categories :
+
 1. **Login**:
    - **Login_WithValidCredentials_ShouldSucceed**: Verifies that logging in with valid credentials succeeds.
    - **Login_WithInvalidCredentials_ShouldFail**: Verifies that logging in with invalid credentials fails.
@@ -494,10 +480,6 @@ The `IAuthService` interface defines the following methods:
 - **Test**: `Login_WithInvalidCredentials_ShouldFail`
 - **Description**: This test verifies that the `Login` method returns `false` when a user logs in with invalid credentials.
 
-#### A user must not be able to log in with empty credentials.
-- **Test**: `Login_WithEmptyCredentials_ShouldThrowException`
-- **Description**: This test verifies that the `Login` method throws an exception when a user logs in with empty credentials.
-
 #### A valid user must be able to generate a token.
 - **Test**: `GenerateToken_WithValidUser_ShouldReturnToken`
 - **Description**: This test verifies that the `GenerateToken` method returns a token when a valid user is provided.
@@ -506,17 +488,9 @@ The `IAuthService` interface defines the following methods:
 - **Test**: `GenerateToken_WithInvalidUser_ShouldThrowException`
 - **Description**: This test verifies that the `GenerateToken` method throws an exception when an invalid user is provided.
 
-#### A user must be able to reset their password with a valid email.
-- **Test**: `ResetPassword_WithValidEmail_ShouldSendResetLink`
-- **Description**: This test verifies that the `ResetPassword` method sends a reset link when a valid email is provided.
-
 #### A user must not be able to reset their password with an invalid email.
 - **Test**: `ResetPassword_WithInvalidEmail_ShouldFail`
 - **Description**: This test verifies that the `ResetPassword` method returns `false` when an invalid email is provided.
-
-#### A user must not be able to reset their password with an empty email.
-- **Test**: `ResetPassword_WithEmptyEmail_ShouldThrowException`
-- **Description**: This test verifies that the `ResetPassword` method throws an exception when an empty email is provided.
 
 ## User Service
 
@@ -531,6 +505,8 @@ The `IUserService` interface defines the following methods:
 | `GetUserById(string userId)`               | Retrieves a user by their ID.                                               |
 
 ### Test Cases
+
+We have splitted our tests into 3 main categories :
 
 1. **User Registration**:
    - **RegisterUser_NullUser_ThrowsArgumentNullException**: Verifies that registering a null user throws an `ArgumentNullException`.

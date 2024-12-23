@@ -18,6 +18,15 @@ namespace SchoolApp.UserRegistration
         bool RegisterUser(string name, string email, string password);
 
         /// <summary>
+        /// Validates the lengths of the provided name, email, and password.
+        /// </summary>
+        /// <param name="name">The user's name.</param>
+        /// <param name="email">The user's email.</param>
+        /// <param name="password">The user's password.</param>
+        /// <returns>True if the lengths are valid; otherwise, false.</returns>
+        bool IsValidLength(string name, string email, string password);
+
+        /// <summary>
         /// Validates whether the provided name meets the application's rules.
         /// </summary>
         /// <param name="name">The user's name.</param>

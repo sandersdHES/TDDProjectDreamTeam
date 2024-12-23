@@ -43,7 +43,7 @@ namespace SchoolApp.UserRegistration.Models
             return true;
         }
 
-        private bool IsValidLength(string name, string email, string password)
+        public bool IsValidLength(string name, string email, string password)
         {
             return name.Length <= MaxLength && email.Length <= MaxLength && password.Length <= MaxLength;
         }
