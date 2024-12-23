@@ -14,20 +14,10 @@ This will be useful to create a fully functionnal user service, containing the c
 - [Setup instructions](#setup-instructions)
 - [Repository and models](#repository-and-models)
 - [Role Management](#role-management)
-  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-1)
-  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-1)
 - [User Registration](#user-registration)
-  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-2)
-  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-2)
 - [Profile Management](#profile-management)
-  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-3)
-  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-3)
 - [User Authentication](#user-authentication)
-  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-4)
-  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-4)
 - [User Service](#user-service)
-  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-5)
-  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-5)
 
 ## Setup instructions
 
@@ -245,7 +235,23 @@ public class RoleRepository : IRoleRepository
 
 ## Role Management
 
-### a. Rationale of Test Cases and Coverage
+The Role Management Service is responsible for handling all operations related to roles within the system. The goal of this service is to ensure that roles are managed efficiently and securely, providing the necessary permissions to users based on their roles.
+
+The `IRoleManagementService` interface defines the following methods:
+
+| Method Name               | Description                                                                 |
+|---------------------------|-----------------------------------------------------------------------------|
+| `CreateRole(Role role)`   | Creates a new role in the system.                                            |
+| `AssignRole(string userId, Role role)` | Assigns a specified role to a user.                                |
+| `IsRoleValid(Role role)`  | Checks if a given role is valid.                                             |
+| `HasAccess(string userId, string feature)` | Checks if a user has access to a specific feature based on their role. |
+| `UpdateUserRole(string adminId, string userId, Role newRole)` | Updates the role of a user, typically performed by an admin. |
+
+### Test Cases
+
+> Only the method to check if a role is valid is not directly tested here, since it is a helper method used in other methods of the same service.
+
+We have splitted our tests into 4 main categories, each representing a main functionnality of the Role Management Service :
 
 1. **Role Creation**:
    - **CreateRole_ValidRole_ShouldSucceed**: Verifies that creating a valid role succeeds.
@@ -268,27 +274,44 @@ public class RoleRepository : IRoleRepository
    - **UpdateUserRole_NonAdmin_ShouldThrowException**: Verifies that only admins can update roles.
    - **UpdateUserRole_NonExistentRole_ReturnsFalse**: Verifies that updating to a non-existent role fails.
 
-### b. Examples of Test Cases and Mapping to Requirements
+### Code coverage
 
-#### Requirement: A role must be able to be created if it does not already exist.
+**To be filled and explained**
+
+### Examples
+
+#### A role must be able to be created if it does not already exist.
 - **Test**: `CreateRole_ValidRole_ShouldSucceed`
 - **Description**: This test verifies that the `CreateRole` method returns `true` when a valid role is created and that the role repository is updated.
 
-#### Requirement: A role must not be able to be created if it already exists.
+#### A role must not be able to be created if it already exists.
 - **Test**: `CreateRole_DuplicateRole_ShouldFail`
 - **Description**: This test verifies that the `CreateRole` method returns `false` when a duplicate role is attempted to be created.
 
-#### Requirement: A user must be able to be assigned a valid role.
+#### A user must be able to be assigned a valid role.
 - **Test**: `AssignRole_ValidRole_ShouldSucceed`
 - **Description**: This test verifies that the `AssignRole` method returns `true` when a valid role is assigned to a user and that the user's role is updated.
 
-#### Requirement: An admin must be able to update a user's role.
+#### An admin must be able to update a user's role.
 - **Test**: `UpdateUserRole_StudentToStaff_ShouldSucceed`
 - **Description**: This test verifies that the `UpdateUserRole` method returns `true` when an admin updates a user's role and that the user's role is updated.
 
 ## User Registration
 
-### a. Rationale of Test Cases and Coverage
+The User Registration Service is responsible for handling all operations related to user registration within the system. The goal of this service is to ensure that users can register efficiently and securely, validating their information and ensuring that all registration requirements are met.
+
+The `IUserRegistrationService` interface defines the following methods:
+
+| Method Name                       | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `RegisterUser(string name, string email, string password)` | Registers a new user with the specified name, email, and password. |
+| `ValidateName(string name)`       | Validates whether the provided name meets the application's rules.          |
+| `IsValidEmail(string email)`      | Validates whether the provided email is in a valid format.                  |
+| `IsEmailAvailable(string email)`  | Checks if the email is available (not already registered).                  |
+| `IsValidPassword(string password)`| Validates whether the provided password meets the application's security requirements. |
+
+
+### Test Cases
 
 1. **User Registration**:
    - **RegisterUser_Should_Succeed_With_Valid_Inputs**: Verifies that registering a user with valid inputs succeeds.
@@ -309,37 +332,46 @@ public class RoleRepository : IRoleRepository
 4. **Password Validation**:
    - **IsValidPassword_Should_Succeed_With_Strong_Password**: Verifies that password validation succeeds with a strong password.
 
-### b. Examples of Test Cases and Mapping to Requirements
+### Code coverage
 
-#### Requirement: A user must be able to register with valid inputs.
+**To be filled and explained**
+
+### Examples
+
+#### A user must be able to register with valid inputs.
 - **Test**: `RegisterUser_Should_Succeed_With_Valid_Inputs`
 - **Description**: This test verifies that the `RegisterUser` method returns `true` when a user is registered with valid inputs and that the user repository is updated.
 
-#### Requirement: A user must not be able to register with empty inputs.
+#### A user must not be able to register with empty inputs.
 - **Test**: `RegisterUser_Should_Fail_With_Empty_Inputs`
 - **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with empty inputs.
 
-#### Requirement: A user must not be able to register with an invalid email format.
-- **Test**: `RegisterUser_Should_Fail_With_Invalid_Email_Format`
-- **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with an invalid email format.
-
-#### Requirement: A user must not be able to register with a weak password.
+#### A user must not be able to register with a weak password.
 - **Test**: `RegisterUser_Should_Fail_With_Weak_Password`
 - **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with a weak password.
 
-#### Requirement: A user must not be able to register with SQL injection attempts.
+#### A user must not be able to register with SQL injection attempts.
 - **Test**: `RegisterUser_Should_Prevent_SQL_Injection`
 - **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with SQL injection attempts.
 
-#### Requirement: Email case insensitivity must be handled correctly during registration.
+#### Email case insensitivity must be handled correctly during registration.
 - **Test**: `RegisterUser_Should_Handle_Email_Case_Insensitivity`
 - **Description**: This test verifies that the `RegisterUser` method handles email case insensitivity correctly during registration.
 
 ## Profile Management
 
-### a. Rationale of Test Cases and Coverage
+The User Profile Service is responsible for handling all operations related to user profiles within the system. The goal of this service is to ensure that user profiles are managed efficiently and securely.
 
-The unit tests for profile management are designed to verify the critical functionalities of the profile management service. Here are the main categories of tests and their rationale:
+The `IUserProfileService` interface defines the following methods:
+
+| Method Name                                      | Description                                                                 |
+|--------------------------------------------------|-----------------------------------------------------------------------------|
+| `GetProfile(string userId)`                      | Retrieves the profile of a user by their ID.                                 |
+| `UpdateProfile(string userId, User updatedUser)` | Updates the profile information of a user.                                   |
+| `UpdatePassword(string userId, string currentPassword, string newPassword)` | Updates the password of a user.                                              |
+| `IsAuthorizedToUpdateProfile(string userId, string profileId)` | Checks if a user is authorized to update a specific profile.                  |
+
+### Test Cases
 
 1. **Profile Retrieval**:
    - **GetProfile_WithValidUserId_ShouldReturnUserProfile**: Verifies that retrieving a profile with a valid user ID returns the correct user profile.
@@ -360,53 +392,79 @@ The unit tests for profile management are designed to verify the critical functi
    - **IsAuthorizedToUpdateProfile_ByAdmin_ShouldReturnTrue**: Verifies that an admin is authorized to update a profile.
    - **IsAuthorizedToUpdateProfile_ByNonAdmin_ShouldReturnFalse**: Verifies that a non-admin is not authorized to update a profile.
 
-### b. Examples of Test Cases and Mapping to Requirements
+### Code coverage
 
-#### Requirement: A user must be able to retrieve their profile with a valid user ID.
+**To be filled and explained**
+
+### Examples
+
+#### A user must be able to retrieve their profile with a valid user ID.
 - **Test**: `GetProfile_WithValidUserId_ShouldReturnUserProfile`
 - **Description**: This test verifies that the `GetProfile` method returns the correct user profile when a valid user ID is provided.
 
-#### Requirement: A user must not be able to retrieve a profile with an unauthorized user ID.
+#### A user must not be able to retrieve a profile with an unauthorized user ID.
 - **Test**: `GetProfile_WithUnauthorizedUserId_ShouldReturnNull`
 - **Description**: This test verifies that the `GetProfile` method returns null when an unauthorized user ID is provided.
 
-#### Requirement: A user must be able to update their profile with valid data.
+#### A user must be able to update their profile with valid data.
 - **Test**: `UpdateProfile_WithValidData_ShouldUpdateUser`
 - **Description**: This test verifies that the `UpdateProfile` method returns `true` and updates the user profile when valid data is provided.
 
-#### Requirement: A user must not be able to update their profile with an invalid email.
+#### A user must not be able to update their profile with an invalid email.
 - **Test**: `UpdateProfile_WithInvalidEmail_ShouldReturnFalse`
 - **Description**: This test verifies that the `UpdateProfile` method returns `false` when an invalid email is provided.
 
-#### Requirement: A user must not be able to update their profile with a duplicate email.
+#### A user must not be able to update their profile with a duplicate email.
 - **Test**: `UpdateProfile_WithDuplicateEmail_ShouldReturnFalse`
 - **Description**: This test verifies that the `UpdateProfile` method returns `false` when a duplicate email is provided.
 
-#### Requirement: A user must be able to update their password with the correct current password.
+#### A user must be able to update their password with the correct current password.
 - **Test**: `UpdatePassword_WithCorrectCurrentPassword_ShouldUpdatePassword`
 - **Description**: This test verifies that the `UpdatePassword` method returns `true` and updates the password when the correct current password is provided.
 
-#### Requirement: A user must not be able to update their password with an incorrect current password.
+#### A user must not be able to update their password with an incorrect current password.
 - **Test**: `UpdatePassword_WithIncorrectCurrentPassword_ShouldReturnFalse`
 - **Description**: This test verifies that the `UpdatePassword` method returns `false` when an incorrect current password is provided.
 
-#### Requirement: A user must not be able to update their password with a weak new password.
+#### A user must not be able to update their password with a weak new password.
 - **Test**: `UpdatePassword_WithWeakNewPassword_ShouldReturnFalse`
 - **Description**: This test verifies that the `UpdatePassword` method returns `false` when a weak new password is provided.
 
-#### Requirement: An admin must be authorized to update any user's profile.
+#### An admin must be authorized to update any user's profile.
 - **Test**: `IsAuthorizedToUpdateProfile_ByAdmin_ShouldReturnTrue`
 - **Description**: This test verifies that the `IsAuthorizedToUpdateProfile` method returns `true` when an admin attempts to update a profile.
 
-#### Requirement: A non-admin must not be authorized to update another user's profile.
+#### A non-admin must not be authorized to update another user's profile.
 - **Test**: `IsAuthorizedToUpdateProfile_ByNonAdmin_ShouldReturnFalse`
 - **Description**: This test verifies that the `IsAuthorizedToUpdateProfile` method returns `false` when a non-admin attempts to update another user's profile.
 
 ## User Authentication
 
-### a. Rationale of Test Cases and Coverage
+### The Hashing Service
 
-The unit tests for user authentication are designed to verify the critical functionalities of the user authentication service. Here are the main categories of tests and their rationale:
+The Hashing Service is responsible for securely hashing and verifying passwords. This ensures that user passwords are stored securely and can be verified during authentication.
+
+The `IHashingService` interface defines the following methods:
+
+| Method Name                       | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `HashPassword(string password)`   | Hashes the provided password.                                               |
+| `VerifyPassword(string password, string hashedPassword)` | Verifies that the provided password matches the hashed password.             |
+
+### The Authentication Service
+
+The Authentication Service is responsible for handling user authentication, checking if accounts are locked, and resetting passwords. This ensures that users can authenticate securely and manage their account access.
+
+The `IAuthService` interface defines the following methods:
+
+| Method Name                       | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `AuthenticateAsync(string email, string password)` | Authenticates a user with the provided email and password.                  |
+| `IsAccountLockedAsync(string email)` | Checks if the account associated with the provided email is locked.          |
+| `ResetPasswordAsync(string email, string newPassword)` | Resets the password for the account associated with the provided email.      |
+
+
+### Test Cases
 
 1. **Login**:
    - **Login_WithValidCredentials_ShouldSucceed**: Verifies that logging in with valid credentials succeeds.
@@ -422,45 +480,57 @@ The unit tests for user authentication are designed to verify the critical funct
    - **ResetPassword_WithInvalidEmail_ShouldFail**: Verifies that resetting the password with an invalid email fails.
    - **ResetPassword_WithEmptyEmail_ShouldThrowException**: Verifies that resetting the password with an empty email throws an exception.
 
-### b. Examples of Test Cases and Mapping to Requirements
+### Code coverage
 
-#### Requirement: A user must be able to log in with valid credentials.
+**To be filled and explained**
+
+### Examples
+
+#### A user must be able to log in with valid credentials.
 - **Test**: `Login_WithValidCredentials_ShouldSucceed`
 - **Description**: This test verifies that the `Login` method returns `true` when a user logs in with valid credentials.
 
-#### Requirement: A user must not be able to log in with invalid credentials.
+#### A user must not be able to log in with invalid credentials.
 - **Test**: `Login_WithInvalidCredentials_ShouldFail`
 - **Description**: This test verifies that the `Login` method returns `false` when a user logs in with invalid credentials.
 
-#### Requirement: A user must not be able to log in with empty credentials.
+#### A user must not be able to log in with empty credentials.
 - **Test**: `Login_WithEmptyCredentials_ShouldThrowException`
 - **Description**: This test verifies that the `Login` method throws an exception when a user logs in with empty credentials.
 
-#### Requirement: A valid user must be able to generate a token.
+#### A valid user must be able to generate a token.
 - **Test**: `GenerateToken_WithValidUser_ShouldReturnToken`
 - **Description**: This test verifies that the `GenerateToken` method returns a token when a valid user is provided.
 
-#### Requirement: An invalid user must not be able to generate a token.
+#### An invalid user must not be able to generate a token.
 - **Test**: `GenerateToken_WithInvalidUser_ShouldThrowException`
 - **Description**: This test verifies that the `GenerateToken` method throws an exception when an invalid user is provided.
 
-#### Requirement: A user must be able to reset their password with a valid email.
+#### A user must be able to reset their password with a valid email.
 - **Test**: `ResetPassword_WithValidEmail_ShouldSendResetLink`
 - **Description**: This test verifies that the `ResetPassword` method sends a reset link when a valid email is provided.
 
-#### Requirement: A user must not be able to reset their password with an invalid email.
+#### A user must not be able to reset their password with an invalid email.
 - **Test**: `ResetPassword_WithInvalidEmail_ShouldFail`
 - **Description**: This test verifies that the `ResetPassword` method returns `false` when an invalid email is provided.
 
-#### Requirement: A user must not be able to reset their password with an empty email.
+#### A user must not be able to reset their password with an empty email.
 - **Test**: `ResetPassword_WithEmptyEmail_ShouldThrowException`
 - **Description**: This test verifies that the `ResetPassword` method throws an exception when an empty email is provided.
 
 ## User Service
 
-### a. Rationale of Test Cases and Coverage
+The User Service is responsible for handling user registration, authentication, and retrieval of user information. This ensures that users can register, log in, and access their profile information securely and efficiently.
 
-The unit tests for user service are designed to verify the critical functionalities of the user service. Here are the main categories of tests and their rationale:
+The `IUserService` interface defines the following methods:
+
+| Method Name                                | Description                                                                 |
+|--------------------------------------------|-----------------------------------------------------------------------------|
+| `RegisterUser(User user, string password)` | Registers a new user with the specified user details and password.          |
+| `AuthenticateUser(string email, string password)` | Authenticates a user with the provided email and password.                  |
+| `GetUserById(string userId)`               | Retrieves a user by their ID.                                               |
+
+### Test Cases
 
 1. **User Registration**:
    - **RegisterUser_NullUser_ThrowsArgumentNullException**: Verifies that registering a null user throws an `ArgumentNullException`.
@@ -476,36 +546,40 @@ The unit tests for user service are designed to verify the critical functionalit
    - **GetUserById_UserFound_ReturnsUser**: Verifies that retrieving a user by ID returns the user if found.
    - **GetUserById_InvalidUserId_ThrowsKeyNotFoundException**: Verifies that retrieving a user by an invalid ID throws a `KeyNotFoundException`.
 
-### b. Examples of Test Cases and Mapping to Requirements
+### Code coverage
 
-#### Requirement: A user must not be able to register with null details.
+**To be filled and explained**
+
+### Examples of Test Cases and Mapping to Requirements
+
+#### A user must not be able to register with null details.
 - **Test**: `RegisterUser_NullUser_ThrowsArgumentNullException`
 - **Description**: This test verifies that the `RegisterUser` method throws an `ArgumentNullException` when a null user is provided.
 
-#### Requirement: A user must not be able to register with invalid details.
+#### A user must not be able to register with invalid details.
 - **Test**: `RegisterUser_InvalidRegistrationDetails_ThrowsArgumentException`
 - **Description**: This test verifies that the `RegisterUser` method throws an `ArgumentException` when invalid registration details are provided.
 
-#### Requirement: A user must be able to register with valid details.
+#### A user must be able to register with valid details.
 - **Test**: `RegisterUser_ValidUser_ReturnsRegisteredUser`
 - **Description**: This test verifies that the `RegisterUser` method returns the registered user when valid details are provided.
 
-#### Requirement: A user must not be able to authenticate with empty credentials.
+#### A user must not be able to authenticate with empty credentials.
 - **Test**: `AuthenticateUser_EmptyCredentials_ThrowsArgumentException`
 - **Description**: This test verifies that the `AuthenticateUser` method throws an `ArgumentException` when empty credentials are provided.
 
-#### Requirement: A user must not be able to authenticate with invalid email or password.
+#### A user must not be able to authenticate with invalid email or password.
 - **Test**: `AuthenticateUser_InvalidEmailOrPassword_ThrowsUnauthorizedAccessException`
 - **Description**: This test verifies that the `AuthenticateUser` method throws an `UnauthorizedAccessException` when invalid email or password is provided.
 
-#### Requirement: A user must be able to authenticate with valid credentials.
+#### A user must be able to authenticate with valid credentials.
 - **Test**: `AuthenticateUser_ValidCredentials_ReturnsAuthenticatedUser`
 - **Description**: This test verifies that the `AuthenticateUser` method returns the authenticated user when valid credentials are provided.
 
-#### Requirement: A user must be able to retrieve their details by ID if found.
+#### A user must be able to retrieve their details by ID if found.
 - **Test**: `GetUserById_UserFound_ReturnsUser`
 - **Description**: This test verifies that the `GetUserById` method returns the user when a valid user ID is provided.
 
-#### Requirement: A user must not be able to retrieve details with an invalid ID.
+#### A user must not be able to retrieve details with an invalid ID.
 - **Test**: `GetUserById_InvalidUserId_ThrowsKeyNotFoundException`
 - **Description**: This test verifies that the `GetUserById` method throws a `KeyNotFoundException` when an invalid user ID is provided.
