@@ -1,4 +1,249 @@
-## Role Management - Unit Test Documentation
+# Unit Test Documentation
+
+Welcome to our TDD project. This project will focus on tests related to the module User Management. This module is split into 4 main tasks:
+
+1. Role Management
+2. User Registration
+3. Profile Management
+4. User Authentication
+
+This will be useful to create a fully functionnal user service, containing the capabilities of managing the afro-mentionned tasks.
+
+## Summary
+
+- [Setup instructions](#setup-instructions)
+- [Repository and models](#repository-and-models)
+- [Role Management](#role-management)
+  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-1)
+  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-1)
+- [User Registration](#user-registration)
+  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-2)
+  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-2)
+- [Profile Management](#profile-management)
+  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-3)
+  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-3)
+- [User Authentication](#user-authentication)
+  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-4)
+  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-4)
+- [User Service](#user-service)
+  - [Rationale of Test Cases and Coverage](#a-rationale-of-test-cases-and-coverage-5)
+  - [Examples of Test Cases and Mapping to Requirements](#b-examples-of-test-cases-and-mapping-to-requirements-5)
+
+## Setup instructions
+
+### Prerequisites
+
+1. **Visual Studio 2022**: Ensure you have Visual Studio 2022 installed. You can download it from [here](https://visualstudio.microsoft.com/vs/).
+2. **.NET SDK**: Make sure you have the .NET SDK installed. You can download it from [here](https://dotnet.microsoft.com/download).
+
+### Cloning the Repository
+
+1. Open Visual Studio 2022.
+2. Go to `File` > `Clone Repository`.
+3. Enter the repository URL and choose a local path to clone the repository.
+
+### Building the Project
+
+1. Open the solution file (`.sln`) in Visual Studio 2022.
+2. Go to `Build` > `Build Solution` or press `Ctrl+Shift+B`.
+
+### Running the Tests
+
+1. Open the Test Explorer in Visual Studio by going to `Test` > `Test Explorer`.
+2. Click on `Run All` to execute all the tests.
+
+### Running the Application
+
+1. Set the startup project by right-clicking on the project in the Solution Explorer and selecting `Set as Startup Project`.
+2. Press `F5` to run the application.
+
+### Additional Tools
+
+- **NuGet Packages**: Ensure all required NuGet packages are installed. You can restore them by right-clicking on the solution in the Solution Explorer and selecting `Restore NuGet Packages`.
+- **Code Analysis**: Install and follow the process for [Fine Code Coverage](https://github.com/FortuneN/FineCodeCoverage).
+
+## Repository and models
+
+To replicate the gathering of data and information in an API architecture, we have implemented models and repositories.
+
+The models will reflect the objects that we will need to obtain and use to manage the users in our application. The repositories on the other hand will act as the database, from which we will query to obtain the required information depending on the service used.
+
+You will now see in details our chosen models and repositories.
+
+### User Model
+
+The `User` model represents a user in the system. It contains the following properties:
+- `Id`: A unique identifier for the user.
+- `Name`: The name of the user.
+- `Email`: The email address of the user.
+- `PasswordHash`: The hashed password of the user.
+- `Role`: The role assigned to the user.
+
+We have used 2 specific constructors, since we will only need connection informations like email and password during registration or authentication.
+
+```csharp
+public class User
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string PasswordHash { get; set; }
+    public Role Role { get; set; }
+
+    public User(string id, string name, Role role)
+    {
+        Id = id;
+        Name = name;
+        Role = role;
+    }
+
+    public User(string id, string name, string email, string passwordHash, Role role)
+    {
+        Id = id;
+        Name = name;
+        Email = email;
+        PasswordHash = passwordHash;
+        Role = role;
+    }
+}
+```
+
+### Role Model
+
+The `Role` model represents a role in the system. It contains the following properties:
+- `Name`: The name of the role.
+- `Permissions`: A list of permissions associated with the role.
+
+It comes with a set of methods to manipulate the permissions. No permission by default are being used in our services.
+
+```csharp
+public class Role
+{
+    public string Name { get; set; }
+    public List<string> Permissions { get; set; }
+
+    public Role(string name, List<string> permissions)
+    {
+        Name = name;
+        Permissions = permissions ?? new List<string>();
+    }
+
+    public bool HasPermission(string feature)
+    {
+        return Permissions.Contains(feature, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public void AddPermission(string feature)
+    {
+        Permissions.Add(feature);
+    }
+
+    public void RemovePermission(string feature)
+    {
+        Permissions.Remove(feature);
+    }
+}
+```
+
+### User Repository
+
+The `UserRepository` class is responsible for managing user data. It provides methods to add, remove, update, and retrieve users.
+
+```csharp
+public class UserRepository : IUserRepository
+{
+    private readonly List<User> _users = new List<User>();
+
+    public User GetUser(string userId)
+    {
+        return _users.FirstOrDefault(u => u.Id == userId)
+               ?? throw new KeyNotFoundException($"User '{userId}' not found.");
+    }
+
+    public void AddUser(User user)
+    {
+        if (_users.Any(u => u.Id == user.Id))
+            throw new InvalidOperationException($"User '{user.Id}' already exists.");
+        _users.Add(user);
+    }
+
+    public void RemoveUser(string userId)
+    {
+        var user = GetUser(userId);
+        _users.Remove(user);
+    }
+      
+    public bool UserExists(string userId)
+    {
+        return _users.Any(u => u.Id == userId);
+    }
+
+    public IEnumerable<User> GetUsers() {
+        return _users;
+    }
+
+    public User GetUserByEmail(string email)
+    {
+        return _users.FirstOrDefault(u => u.Email == email)
+               ?? throw new KeyNotFoundException($"User with email '{email}' not found.");
+    }
+
+    public void UpdateUser(User updatedUser)
+    {
+        var existingUser = GetUser(updatedUser.Id);
+
+        if (existingUser == null)
+            throw new KeyNotFoundException($"User '{updatedUser.Id}' not found for update.");
+
+        existingUser.Name = updatedUser.Name;
+        existingUser.Email = updatedUser.Email;
+        existingUser.PasswordHash = updatedUser.PasswordHash;
+        existingUser.Role = updatedUser.Role;
+    }
+}
+```
+
+### Role Repository
+
+The `RoleRepository` class is responsible for managing role data. It provides methods to add, remove, and retrieve roles.
+
+```csharp
+public class RoleRepository : IRoleRepository
+{
+    private readonly List<Role> _roles = new List<Role>();
+
+    public Role GetRole(string roleName)
+    {
+        return _roles.FirstOrDefault(r => r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+               ?? throw new KeyNotFoundException($"Role '{roleName}' not found.");
+    }
+
+    public void AddRole(Role role)
+    {
+        if (_roles.Any(r => r.Name.Equals(role.Name, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"Role '{role.Name}' already exists.");
+        _roles.Add(role);
+    }
+
+    public void RemoveRole(string roleName)
+    {
+        var role = GetRole(roleName);
+        _roles.Remove(role);
+    }
+
+    public bool RoleExists(string roleName)
+    {
+        return _roles.Any(r => r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public IEnumerable<Role> GetAllRoles()
+    {
+        return _roles;
+    }
+}
+```
+
+## Role Management
 
 ### a. Rationale of Test Cases and Coverage
 
@@ -41,7 +286,7 @@
 - **Test**: `UpdateUserRole_StudentToStaff_ShouldSucceed`
 - **Description**: This test verifies that the `UpdateUserRole` method returns `true` when an admin updates a user's role and that the user's role is updated.
 
-## User Registration - Unit Test Documentation
+## User Registration
 
 ### a. Rationale of Test Cases and Coverage
 
@@ -90,7 +335,7 @@
 - **Test**: `RegisterUser_Should_Handle_Email_Case_Insensitivity`
 - **Description**: This test verifies that the `RegisterUser` method handles email case insensitivity correctly during registration.
 
-## Profile Management - Unit Test Documentation
+## Profile Management
 
 ### a. Rationale of Test Cases and Coverage
 
@@ -157,7 +402,7 @@ The unit tests for profile management are designed to verify the critical functi
 - **Test**: `IsAuthorizedToUpdateProfile_ByNonAdmin_ShouldReturnFalse`
 - **Description**: This test verifies that the `IsAuthorizedToUpdateProfile` method returns `false` when a non-admin attempts to update another user's profile.
 
-## User Authentication - Unit Test Documentation
+## User Authentication
 
 ### a. Rationale of Test Cases and Coverage
 
@@ -211,7 +456,7 @@ The unit tests for user authentication are designed to verify the critical funct
 - **Test**: `ResetPassword_WithEmptyEmail_ShouldThrowException`
 - **Description**: This test verifies that the `ResetPassword` method throws an exception when an empty email is provided.
 
-## User Service - Unit Test Documentation
+## User Service
 
 ### a. Rationale of Test Cases and Coverage
 
