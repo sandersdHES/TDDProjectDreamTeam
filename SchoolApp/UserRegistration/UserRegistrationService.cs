@@ -4,58 +4,48 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using SchoolApp.Models;
+using SchoolApp.Repositories;
 
 namespace SchoolApp.UserRegistration.Models
 {
     public class UserRegistrationService : IUserRegistrationService
     {
         private const int MaxLength = 255;
-        public readonly HashSet<string> _registeredEmails;
+        private readonly IUserRepository _userRepository;
 
-        public UserRegistrationService()
+        public UserRegistrationService(IUserRepository userRepository)
         {
-            _registeredEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "existing.email@example.com",
-                "test.user@example.com"
-            };
+            _userRepository = userRepository;
         }
-
 
         public bool RegisterUser(string name, string email, string password)
         {
             // Validate input lengths
-            if (name.Length > MaxLength || email.Length > MaxLength || password.Length > MaxLength)
+            if (!IsValidLength(name, email, password))
             {
                 return false;
             }
 
-            // Validate name
-            if (!ValidateName(name))
+            if (!ValidateName(name) || !IsValidEmail(email) || !IsValidPassword(password))
             {
                 return false;
             }
-
-            // Validate email
-            if (!IsValidEmail(email))
-            {
-                return false;
-            }
-
             // Check email availability
             if (!IsEmailAvailable(email))
             {
                 return false;
             }
 
-            // Validate password
-            if (!IsValidPassword(password))
-            {
-                return false;
-            }
+            var user = new User(name, name, email, password, null );
+            _userRepository.AddUser(user);
 
-            // Save the user to the database (mocked)
-            return SaveUserToDatabase(name, email, password);
+            return true;
+        }
+
+        private bool IsValidLength(string name, string email, string password)
+        {
+            return name.Length <= MaxLength && email.Length <= MaxLength && password.Length <= MaxLength;
         }
 
         public bool ValidateName(string name)
@@ -87,12 +77,15 @@ namespace SchoolApp.UserRegistration.Models
 
         public bool IsEmailAvailable(string email)
         {
-            if (string.IsNullOrWhiteSpace(email))
+            try
             {
+                _userRepository.GetUserByEmail(email);
                 return false;
             }
-
-            return !_registeredEmails.Contains(email);
+            catch (KeyNotFoundException)
+            {
+                return true;
+            }
         }
 
         public bool IsValidPassword(string password)
@@ -104,13 +97,6 @@ namespace SchoolApp.UserRegistration.Models
 
             var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
             return passwordRegex.IsMatch(password);
-        }
-
-        private bool SaveUserToDatabase(string name, string email, string password)
-        {
-            // Mock saving the user to a database
-            _registeredEmails.Add(email);
-            return true;
         }
     }
 

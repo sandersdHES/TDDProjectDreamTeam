@@ -1,17 +1,20 @@
 ﻿using Xunit;
 using Moq;
 using SchoolApp.UserRegistration.Models;
-using SchoolApp.UserRegistration;
+using SchoolApp.Repositories;
+using SchoolApp.Models;
 
 namespace TDDProjectDreamTeam.UserRegistration
 {
     public class UserRegistrationServiceTests
     {
         private readonly UserRegistrationService _userRegistrationService;
+        private readonly Mock<IUserRepository> _userRepositoryMock;
 
         public UserRegistrationServiceTests()
         {
-            _userRegistrationService = new UserRegistrationService();
+            _userRepositoryMock = new Mock<IUserRepository>();
+            _userRegistrationService = new UserRegistrationService(_userRepositoryMock.Object);
         }
 
         [Fact]
@@ -21,12 +24,14 @@ namespace TDDProjectDreamTeam.UserRegistration
             var name = "John Doe";
             var email = "john.doe@example.com";
             var password = "StrongPassword123!";
+            _userRepositoryMock.Setup(repo => repo.GetUserByEmail(email)).Throws(new KeyNotFoundException());
 
             // Act
             var result = _userRegistrationService.RegisterUser(name, email, password);
 
             // Assert
             Assert.True(result);
+            _userRepositoryMock.Verify(repo => repo.AddUser(It.IsAny<User>()), Times.Once);
         }
 
         [Fact]
@@ -75,22 +80,6 @@ namespace TDDProjectDreamTeam.UserRegistration
         }
 
         [Fact]
-        public void RegisterUser_Should_Add_Email_To_RegisteredEmails()
-        {
-            // Arrange
-            var name = "John Doe";
-            var email = "new.user@example.com";
-            var password = "StrongPassword123!";
-
-            // Act
-            var result = _userRegistrationService.RegisterUser(name, email, password);
-
-            // Assert
-            Assert.True(result);
-            Assert.False(_userRegistrationService.IsEmailAvailable(email));
-        }
-
-        [Fact]
         public void ValidateName_Should_Fail_If_Name_Is_Too_Short()
         {
             // Arrange
@@ -134,6 +123,7 @@ namespace TDDProjectDreamTeam.UserRegistration
         {
             // Arrange
             var email = "existing.email@example.com";
+            _userRepositoryMock.Setup(repo => repo.GetUserByEmail(email)).Returns(new User("test", email, null));
 
             // Act
             var result = _userRegistrationService.IsEmailAvailable(email);
@@ -174,6 +164,8 @@ namespace TDDProjectDreamTeam.UserRegistration
             // Arrange
             var emailUpper = "USER@EXAMPLE.COM";
             var emailLower = "user@example.com";
+            _userRepositoryMock.Setup(repo => repo.GetUserByEmail(emailUpper)).Throws(new KeyNotFoundException());
+            _userRepositoryMock.Setup(repo => repo.GetUserByEmail(emailLower)).Throws(new KeyNotFoundException());
 
             // Act
             var isAvailableUpper = _userRegistrationService.IsEmailAvailable(emailUpper);
