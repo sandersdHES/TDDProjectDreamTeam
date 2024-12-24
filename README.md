@@ -321,44 +321,43 @@ The `IUserRegistrationService` interface defines the following methods:
 
 ### Test Cases
 
-We have splitted our tests into 2 main categories, the registration of the user itself and the checks done to authorize it. 
+The test suite is divided into **user registration** tests and **input validation** tests. The tests are designed to cover all possible scenarios for user registration, including edge cases, malicious inputs, and invalid formats.
 
-1. **User Registration**:
-   - **RegisterUser_Should_Succeed_With_Valid_Inputs**: Verifies that registering a user with valid inputs succeeds.
-   - **RegisterUser_Should_Fail_With_Empty_Inputs**: Verifies that registering a user with empty inputs fails.
-   - **RegisterUser_Should_Fail_With_Invalid_Email_Format**: Verifies that registering a user with an invalid email format fails.
-   - **RegisterUser_Should_Fail_With_Weak_Password**: Verifies that registering a user with a weak password fails.
-   - **RegisterUser_Should_Prevent_SQL_Injection**: Verifies that registering a user with SQL injection attempts fails.
-   - **RegisterUser_Should_Handle_Email_Case_Insensitivity**: Verifies that email case insensitivity is handled correctly during registration.
+#### 1. **User Registration**
+- **`RegisterUser_Should_Succeed_With_Valid_Inputs`**: Ensures successful registration for valid inputs.
+- **`RegisterUser_Should_Fail_With_Empty_Inputs`**: Confirms registration fails for missing name, email, or password.
+- **`RegisterUser_Should_Fail_With_Invalid_Email_Format`**: Validates rejection of improperly formatted emails.
+- **`RegisterUser_Should_Fail_With_Weak_Password`**: Confirms registration fails for passwords not meeting complexity requirements.
+- **`RegisterUser_Should_Prevent_SQL_Injection`**: Ensures SQL injection attempts are blocked during registration.
+- **`RegisterUser_Should_Handle_Email_Case_Insensitivity`**: Ensures email checks are case-insensitive.
 
-2. **Input Validation**:
-   - **ValidateName_Should_Fail_If_Name_Is_Too_Short**: Verifies that name validation fails if the name is too short.
-   - **ValidateName_Should_Succeed_With_Valid_Name**: Verifies that name validation succeeds with a valid name.
-   - **IsValidEmail_Should_Succeed_With_Valid_Email**: Verifies that email validation succeeds with a valid email.
-   - **IsEmailAvailable_Should_Fail_If_Email_Exists**: Verifies that email availability check fails if the email already exists.
-   - **IsValidPassword_Should_Succeed_With_Strong_Password**: Verifies that password validation succeeds with a strong password.
+#### 2. **Input Validation**
+- **`ValidateName_Should_Fail_If_Name_Is_Too_Short`**: Confirms name validation fails for names that are too short.
+- **`ValidateName_Should_Fail_With_Special_Characters`**: Ensures name validation fails for names with invalid characters.
+- **`IsValidEmail_Should_Succeed_With_Valid_Email`**: Validates that correctly formatted emails are accepted.
+- **`IsEmailAvailable_Should_Fail_If_Email_Exists`**: Verifies rejection of registration attempts for existing emails.
+- **`IsEmailAvailable_Should_Return_True_For_Nonexistent_Email`**: Confirms new emails are accepted for registration.
+- **`IsValidPassword_Should_Fail_With_Missing_Character_Types`**: Ensures passwords missing uppercase, lowercase, digits, or special characters are rejected.
 
 ### Code coverage
 
-![image](https://github.com/user-attachments/assets/338a657f-7650-45fc-9e60-4adc2c28aab1)
+![image](https://github.com/user-attachments/assets/ed2d589d-29a9-40a0-9957-9383795994f7)
 
 ### Examples
 
 #### A user must be able to register with valid inputs.
 - **Test**: `RegisterUser_Should_Succeed_With_Valid_Inputs`
-- **Description**: This test verifies that the `RegisterUser` method returns `true` when a user is registered with valid inputs and that the user repository is updated.
-
-#### A user must not be able to register with empty inputs.
-- **Test**: `RegisterUser_Should_Fail_With_Empty_Inputs`
-- **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with empty inputs.
-
-#### A user must not be able to register with a weak password.
-- **Test**: `RegisterUser_Should_Fail_With_Weak_Password`
-- **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with a weak password.
+- **Description**: Verifies the `RegisterUser` method returns `true` for valid inputs and successfully adds the user to the repository.
 
 #### A user must not be able to register with SQL injection attempts.
 - **Test**: `RegisterUser_Should_Prevent_SQL_Injection`
-- **Description**: This test verifies that the `RegisterUser` method returns `false` when a user is registered with SQL injection attempts.
+- **Description**: Ensures the `RegisterUser` method blocks SQL injection attempts and prevents malicious inputs.
+
+#### A user must not be able to register with invalid or weak inputs.
+- **Test**: 
+  - `RegisterUser_Should_Fail_With_Invalid_Email_Format`
+  - `RegisterUser_Should_Fail_With_Weak_Password`
+- **Description**: Verifies that invalid emails and weak passwords are correctly rejected.
 
 ## Profile Management
 
