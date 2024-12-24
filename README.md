@@ -1,25 +1,18 @@
 # Unit Test Documentation
 
-Welcome to our TDD project !
+Welcome to our **TDD Project** for the University Service Card system!
 
 This project aims to provide a comprehensive user management system with functionalities for role management, user registration, profile management, and user authentication. It is built using .NET and follows Test-Driven Development (TDD) principles.
 
-We will focus on tests related to the module User Management. This module is split into 4 main tasks:
+This will be useful to create a fully functional user service, containing the capabilities of managing the aforementionned tasks.
 
-1. Role Management
-2. User Registration
-3. Profile Management
-4. User Authentication
-
-This will be useful to create a fully functionnal user service, containing the capabilities of managing the afro-mentionned tasks.
-
-Enjoy reading through our Documentation !
-
-**Dylan Sanderson, Johann Von Rotten, Maxime Bossi, Nadja Lötscher**
+**Contributors:**  
+Dylan Sanderson, Johann Von Rotten, Maxime Bossi, Nadja Lötscher
 
 ## Summary
 
 - [Setup instructions](#setup-instructions)
+- [Module Overview](#module-overview)
 - [Repository and models](#repository-and-models)
 - [Role Management](#role-management)
 - [User Registration](#user-registration)
@@ -55,10 +48,25 @@ Enjoy reading through our Documentation !
 1. Set the startup project by right-clicking on the project in the Solution Explorer and selecting `Set as Startup Project`.
 2. Press `F5` to run the application.
 
-### Additional Tools
+### Tools and Libraries
+- **Testing Framework**: xUnit, Moq
+- **Code Coverage**: Fine Code Coverage
+- **Version Control**: Git
+
+### Additional remarks
 
 - **NuGet Packages**: Ensure all required NuGet packages are installed. You can restore them by right-clicking on the solution in the Solution Explorer and selecting `Restore NuGet Packages`.
 - **Code Analysis**: Install and follow the process for [Fine Code Coverage](https://github.com/FortuneN/FineCodeCoverage).
+
+## Module Overview
+
+The **User Management Module** includes these responsibilities:
+1. **User Registration**: Securely register users by validating details.
+2. **User Authentication**: Authenticate users with hashed passwords and manage account access.
+3. **Profile Management**: Enable users to update their profile information securely.
+4. **Role Management**: Assign, update, and verify roles for users, including managing permissions.
+
+The module forms part of the broader **University Service Card system**, which integrates multiple modules like room access, meal payment, and library services.
 
 ## Repository and models
 
@@ -257,9 +265,12 @@ The `IRoleManagementService` interface defines the following methods:
 
 ### Test Cases
 
-> Only the method to check if a role is valid is not directly tested here, since it is a helper method used in other methods of the same service.
+**Key Tests**:
+- Role creation succeeds for valid roles and fails for duplicates.
+- Permissions are verified for roles like `Admin` and `Staff`.
+- Role updates are restricted for critical roles (e.g., cannot remove the last `Admin`).
 
-We have splitted our tests into 4 main categories, each representing a main functionnality of the Role Management Service :
+> Only the method to check if a role is valid is not directly tested here, since it is a helper method used in other methods of the same service.
 
 1. **Role Creation**:
    - **CreateRole_ValidRole_ShouldSucceed**: Verifies that creating a valid role succeeds.
@@ -321,7 +332,11 @@ The `IUserRegistrationService` interface defines the following methods:
 
 ### Test Cases
 
-The test suite is divided into **user registration** tests and **input validation** tests. The tests are designed to cover all possible scenarios for user registration, including edge cases, malicious inputs, and invalid formats.
+**Key Tests**:
+- Registration succeeds with valid inputs.
+- SQL injection attempts are blocked.
+- Case insensitivity is handled during email validation.
+- Password validation enforces security rules (e.g., includes uppercase, lowercase, digits, and special characters).
 
 #### 1. **User Registration**
 - **`RegisterUser_Should_Succeed_With_Valid_Inputs`**: Ensures successful registration for valid inputs.
@@ -374,7 +389,10 @@ The `IUserProfileService` interface defines the following methods:
 
 ### Test Cases
 
-We have splitted our tests into 4 main categories, each one of them representing a main functionnality of the Profile Management Service. 
+**Key Tests**:
+- Profile updates succeed with valid data and fail for duplicate or invalid emails.
+- Simultaneous updates are handled gracefully.
+- Password updates succeed with correct credentials and fail for weak new passwords.
 
 1. **Profile Retrieval**:
    - **GetProfile_WithValidUserId_ShouldReturnUserProfile**: Verifies that retrieving a profile with a valid user ID returns the correct user profile.
@@ -408,10 +426,6 @@ We have splitted our tests into 4 main categories, each one of them representing
 #### A user must be able to update their profile with valid data.
 - **Test**: `UpdateProfile_WithValidData_ShouldUpdateUser`
 - **Description**: This test verifies that the `UpdateProfile` method returns `true` and updates the user profile when valid data is provided.
-
-#### A user must not be able to update their profile with a duplicate email.
-- **Test**: `UpdateProfile_WithDuplicateEmail_ShouldReturnFalse`
-- **Description**: This test verifies that the `UpdateProfile` method returns `false` when a duplicate email is provided.
 
 #### A user must not be able to update their password with a weak new password.
 - **Test**: `UpdatePassword_WithWeakNewPassword_ShouldReturnFalse`
@@ -449,7 +463,10 @@ The `IAuthService` interface defines the following methods:
 
 ### Test Cases
 
-We have splitted our tests into 3 main categories :
+**Key Tests**:
+- Login succeeds for valid credentials and fails for invalid credentials.
+- Password reset links are sent for valid emails.
+- Account lockouts prevent access after repeated failed attempts.
 
 1. **Login**:
    - **Login_WithValidCredentials_ShouldSucceed**: Verifies that logging in with valid credentials succeeds.
@@ -483,10 +500,6 @@ We have splitted our tests into 3 main categories :
 - **Test**: `GenerateToken_WithValidUser_ShouldReturnToken`
 - **Description**: This test verifies that the `GenerateToken` method returns a token when a valid user is provided.
 
-#### An invalid user must not be able to generate a token.
-- **Test**: `GenerateToken_WithInvalidUser_ShouldThrowException`
-- **Description**: This test verifies that the `GenerateToken` method throws an exception when an invalid user is provided.
-
 #### A user must not be able to reset their password with an invalid email.
 - **Test**: `ResetPassword_WithInvalidEmail_ShouldFail`
 - **Description**: This test verifies that the `ResetPassword` method returns `false` when an invalid email is provided.
@@ -505,7 +518,10 @@ The `IUserService` interface defines the following methods:
 
 ### Test Cases
 
-We have splitted our tests into 3 main categories :
+**Key Tests**:
+- Retrieval succeeds for valid user IDs and emails.
+- Updates succeed with valid data and fail for duplicate or invalid emails.
+- Deletion succeeds for valid user IDs and fails for nonexistent users.
 
 1. **User Registration**:
    - **RegisterUser_NullUser_ThrowsArgumentNullException**: Verifies that registering a null user throws an `ArgumentNullException`.
@@ -514,7 +530,7 @@ We have splitted our tests into 3 main categories :
 
 2. **User Authentication**:
    - **AuthenticateUser_EmptyCredentials_ThrowsArgumentException**: Verifies that authenticating with empty credentials throws an `ArgumentException`.
-   - **AuthenticateUser_InvalidEmailOrPassword_ThrowsUnauthorizedAccessException**: Verifies that authenticating with invalid email or password throws an `UnauthorizedAccessException`.
+   - **AuthenticateUser_InvalidEmailOrPassword_ThrowsUnauthorizedAccessException**: Verifies that authenticating with nonvalid email or password throws an `UnauthorizedAccessException`.
    - **AuthenticateUser_ValidCredentials_ReturnsAuthenticatedUser**: Verifies that authenticating with valid credentials returns the authenticated user.
 
 3. **User Retrieval**:
@@ -531,21 +547,9 @@ We have splitted our tests into 3 main categories :
 - **Test**: `RegisterUser_NullUser_ThrowsArgumentNullException`
 - **Description**: This test verifies that the `RegisterUser` method throws an `ArgumentNullException` when a null user is provided.
 
-#### A user must not be able to register with invalid details.
-- **Test**: `RegisterUser_InvalidRegistrationDetails_ThrowsArgumentException`
-- **Description**: This test verifies that the `RegisterUser` method throws an `ArgumentException` when invalid registration details are provided.
-
-#### A user must be able to register with valid details.
-- **Test**: `RegisterUser_ValidUser_ReturnsRegisteredUser`
-- **Description**: This test verifies that the `RegisterUser` method returns the registered user when valid details are provided.
-
 #### A user must not be able to authenticate with empty credentials.
 - **Test**: `AuthenticateUser_EmptyCredentials_ThrowsArgumentException`
 - **Description**: This test verifies that the `AuthenticateUser` method throws an `ArgumentException` when empty credentials are provided.
-
-#### A user must not be able to authenticate with invalid email or password.
-- **Test**: `AuthenticateUser_InvalidEmailOrPassword_ThrowsUnauthorizedAccessException`
-- **Description**: This test verifies that the `AuthenticateUser` method throws an `UnauthorizedAccessException` when invalid email or password is provided.
 
 #### A user must be able to authenticate with valid credentials.
 - **Test**: `AuthenticateUser_ValidCredentials_ReturnsAuthenticatedUser`
@@ -554,7 +558,3 @@ We have splitted our tests into 3 main categories :
 #### A user must be able to retrieve their details by ID if found.
 - **Test**: `GetUserById_UserFound_ReturnsUser`
 - **Description**: This test verifies that the `GetUserById` method returns the user when a valid user ID is provided.
-
-#### A user must not be able to retrieve details with an invalid ID.
-- **Test**: `GetUserById_InvalidUserId_ThrowsKeyNotFoundException`
-- **Description**: This test verifies that the `GetUserById` method throws a `KeyNotFoundException` when an invalid user ID is provided.
