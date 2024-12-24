@@ -284,7 +284,7 @@ We have splitted our tests into 4 main categories, each representing a main func
 
 ### Code coverage
 
-**To be filled and explained**
+![image](https://github.com/user-attachments/assets/88bd803c-a7d1-4e14-a707-184e20a5462f)
 
 ### Examples
 
@@ -340,7 +340,7 @@ We have splitted our tests into 2 main categories, the registration of the user 
 
 ### Code coverage
 
-**To be filled and explained**
+![image](https://github.com/user-attachments/assets/338a657f-7650-45fc-9e60-4adc2c28aab1)
 
 ### Examples
 
@@ -398,7 +398,7 @@ We have splitted our tests into 4 main categories, each one of them representing
 
 ### Code coverage
 
-**To be filled and explained**
+![image](https://github.com/user-attachments/assets/f0f35db6-4134-4598-8d5d-9c458e5f303e)
 
 ### Examples
 
@@ -468,7 +468,7 @@ We have splitted our tests into 3 main categories :
 
 ### Code coverage
 
-**To be filled and explained**
+![image](https://github.com/user-attachments/assets/b7ea815f-c3ba-40e1-9680-1d93631e1d53)
 
 ### Examples
 
@@ -524,7 +524,7 @@ We have splitted our tests into 3 main categories :
 
 ### Code coverage
 
-**To be filled and explained**
+![image](https://github.com/user-attachments/assets/25bb371b-137f-44d2-8e9a-7384ca7f0ce4)
 
 ### Examples of Test Cases and Mapping to Requirements
 
