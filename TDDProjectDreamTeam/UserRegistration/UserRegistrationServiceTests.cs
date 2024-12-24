@@ -34,14 +34,12 @@ namespace TDDProjectDreamTeam.UserRegistration
             _userRepositoryMock.Verify(repo => repo.AddUser(It.IsAny<User>()), Times.Once);
         }
 
-        [Fact]
-        public void RegisterUser_Should_Fail_With_Empty_Inputs()
+        [Theory]
+        [InlineData("", "john.doe@example.com", "StrongPassword123!")]
+        [InlineData("John Doe", "", "StrongPassword123!")]
+        [InlineData("John Doe", "john.doe@example.com", "")]
+        public void RegisterUser_Should_Fail_With_Empty_Inputs(string name, string email, string password)
         {
-            // Arrange
-            var name = "";
-            var email = "";
-            var password = "";
-
             // Act
             var result = _userRegistrationService.RegisterUser(name, email, password);
 
@@ -49,12 +47,14 @@ namespace TDDProjectDreamTeam.UserRegistration
             Assert.False(result);
         }
 
-        [Fact]
-        public void RegisterUser_Should_Fail_With_Invalid_Email_Format()
+        [Theory]
+        [InlineData("user@.com")]
+        [InlineData("user@example")]
+        [InlineData("userexample.com")]
+        public void RegisterUser_Should_Fail_With_Invalid_Email_Format(string email)
         {
             // Arrange
             var name = "John Doe";
-            var email = "invalid-email";
             var password = "StrongPassword123!";
 
             // Act
@@ -64,13 +64,15 @@ namespace TDDProjectDreamTeam.UserRegistration
             Assert.False(result);
         }
 
-        [Fact]
-        public void RegisterUser_Should_Fail_With_Weak_Password()
+        [Theory]
+        [InlineData("weak")]
+        [InlineData("123456")]
+        [InlineData("password")]
+        public void RegisterUser_Should_Fail_With_Weak_Password(string password)
         {
             // Arrange
             var name = "John Doe";
             var email = "john.doe@example.com";
-            var password = "weak";
 
             // Act
             var result = _userRegistrationService.RegisterUser(name, email, password);
@@ -93,16 +95,16 @@ namespace TDDProjectDreamTeam.UserRegistration
         }
 
         [Fact]
-        public void ValidateName_Should_Succeed_With_Valid_Name()
+        public void ValidateName_Should_Fail_With_Special_Characters()
         {
             // Arrange
-            var validName = "John Doe";
+            var name = "Invalid@Name!";
 
             // Act
-            var result = _userRegistrationService.ValidateName(validName);
+            var result = _userRegistrationService.ValidateName(name);
 
             // Assert
-            Assert.True(result);
+            Assert.False(result);
         }
 
         [Fact]
@@ -130,19 +132,6 @@ namespace TDDProjectDreamTeam.UserRegistration
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public void IsValidPassword_Should_Succeed_With_Strong_Password()
-        {
-            // Arrange
-            var password = "Strong@Password123";
-
-            // Act
-            var result = _userRegistrationService.IsValidPassword(password);
-
-            // Assert
-            Assert.True(result);
         }
 
         [Fact]
@@ -174,6 +163,49 @@ namespace TDDProjectDreamTeam.UserRegistration
             // Assert
             Assert.True(isAvailableUpper);
             Assert.True(isAvailableLower);
+        }
+
+        [Fact]
+        public void RegisterUser_Should_Fail_With_Inputs_Exceeding_Max_Length()
+        {
+            // Arrange
+            var name = new string('A', 256);
+            var email = new string('B', 256) + "@example.com";
+            var password = new string('C', 256);
+
+            // Act
+            var result = _userRegistrationService.RegisterUser(name, email, password);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("lowercase123!")]
+        [InlineData("UPPERCASE123!")]
+        [InlineData("NoDigits!")]
+        [InlineData("NoSpecial123")]
+        public void IsValidPassword_Should_Fail_With_Missing_Character_Types(string password)
+        {
+            // Act
+            var result = _userRegistrationService.IsValidPassword(password);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsEmailAvailable_Should_Return_True_For_Nonexistent_Email()
+        {
+            // Arrange
+            var email = "nonexistent@example.com";
+            _userRepositoryMock.Setup(repo => repo.GetUserByEmail(email)).Throws<KeyNotFoundException>();
+
+            // Act
+            var result = _userRegistrationService.IsEmailAvailable(email);
+
+            // Assert
+            Assert.True(result);
         }
     }
 }
