@@ -14,8 +14,8 @@ namespace SchoolApp.ProfileManagement
 
         public UserProfileService(IUserRepository userRepository, IHashingService hashingService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _hashingService = hashingService ?? throw new ArgumentNullException(nameof(hashingService));
+            _userRepository = userRepository;
+            _hashingService = hashingService;
         }
 
         public User GetProfile(string userId)

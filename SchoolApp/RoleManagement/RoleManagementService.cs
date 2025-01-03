@@ -83,11 +83,6 @@ public class RoleManagementService : IRoleManagementService
         return true;
     }
 
-    public bool IsRoleValid(Role role)
-    {
-        return _roleRepository.RoleExists(role.Name);
-    }
-
     private void ValidateInput(string input, string errorMessage)
     {
         if (string.IsNullOrWhiteSpace(input))

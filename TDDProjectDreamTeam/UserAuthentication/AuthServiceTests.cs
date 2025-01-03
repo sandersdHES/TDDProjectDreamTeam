@@ -1,6 +1,5 @@
 using Xunit;
 using Moq;
-using SchoolApp.UserAuthentication.Models;
 using SchoolApp.UserAuthentication;
 
 namespace TDDProjectDreamTeam.UserAuthentication
